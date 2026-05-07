@@ -5,14 +5,12 @@ fine-tuned language model inherited pretraining membership signals from its
 parent model. The core question: can we tell that a fine-tuned model was built
 on top of a specific parent that was trained on a specific data shard?
 
-The pipeline extracts per-token log-probabilities from causal LMs, computes
-MIN-K% PROB scores, calibrates a threshold distinguisher on a held-out
-calibration split, and evaluates shard advantage (TPR − FPR) on a test split.
+The pipeline supports the entire **Pythia family** (1B, 1.4B, 6.9B, and 12B) and
+includes automated orchestrators for 14 different fine-tuned targets.
 
-**Parent model:** `EleutherAI/pythia-1.4b`  
-**Target model:** `nnheui/pythia-1.4b-sft-full` (SFT on UltraChat 200k)  
-**Dataset:** MIMIR GitHub (`iamgroot42/mimir`, config=`github`, split=`ngram_13_0.2`)  
-**Primary score:** `min_k_20_logprob`
+**Scale Support:** 1B, 1.4B, 6.9B, 12B  
+**Primary Dataset:** MIMIR GitHub (`iamgroot42/mimir`, config=`github`)  
+**Primary Metric:** `min_k_20_logprob`
 
 ---
 
@@ -43,19 +41,37 @@ conda activate /tmp/python-venv/model_provenance_venv
 ```
 
 ### Set HuggingFace credentials
-
 ```bash
-export HF_HOME=data/.hf_home
+export HF_HOME=$(pwd)/data/.hf_home
 export HF_TOKEN=<your_hf_token>
 ```
 
 ### Verify the environment
-
 ```bash
 python scripts/setup/check_env.py
 ```
 
 ---
+
+## High-Scale Auditing (6.9B & 12B)
+
+Running audits on 6.9B and 12B models requires significant resources. This repository includes several built-in protections:
+
+1.  **Half-Precision (FP16)**: The model loader in `src/shard_audit/logprobs.py` forces `torch.float16` by default, cutting VRAM and System RAM usage in half.
+2.  **Safe Pre-Downloading**: Each orchestrator script uses `snapshot_download(max_workers=1)` to ensure weights are safely on disk before loading starts. This prevents `SIGKILL` errors during heavy multi-threaded downloads.
+3.  **Batch Size Control**: Scripts are pre-configured with optimal batch sizes:
+    *   1.4B Models: Batch Size 4
+    *   6.9B Models: Batch Size 2
+    *   12B Models: Batch Size 1
+
+### Managing the Model Cache
+The 12B and 6.9B weight files are massive (14GB–48GB per model). If you run out of disk space, you should delete the weights of **finished** target models:
+
+```bash
+# Example: Remove a finished 6.9B target to free up 14GB
+rm -rf data/.hf_home/hub/models--pkarypis--pythia-ultrachat
+```
+*Note: Keep the `EleutherAI/pythia-...` parent models until you have finished all targets of that size.*
 
 ## Repository Layout
 
@@ -87,164 +103,51 @@ src/shard_audit/
 
 ## Reproducing the Experiments
 
-### Experiment 1 — Parent model (EleutherAI/pythia-1.4b) on MIMIR GitHub
+The experiments are fully automated via orchestrator scripts in `scripts/experiments/`. Each script handles data preparation, model scoring (Main and Control), and final provenance reporting in a single command.
 
-#### Step 1: Prepare the dataset
-
-```bash
-python scripts/data/prepare_mimir_github.py \
-  --num-train-per-class 500 \
-  --num-test-per-class 200 \
-  --max-words 32 --min-words 8 \
-  --seed 0 \
-  --output-dir data/processed/mimir_github
-```
-
-Outputs `data/processed/mimir_github/train.jsonl` (1000 records) and
-`test.jsonl` (400 records). Labels: `1` = member of Pythia's GitHub pretraining
-corpus, `0` = nonmember.
-
-#### Step 2: Score the parent model
+### 1. Run Parent Baselines
+Establish the "ground truth" memorization for each scale:
 
 ```bash
-python scripts/scoring/extract_logprob_scores.py \
-  --model EleutherAI/pythia-1.4b \
-  --train-file data/processed/mimir_github/train.jsonl \
-  --test-file  data/processed/mimir_github/test.jsonl \
-  --output-dir data/scores/mimir_github_pythia_mink \
-  --min-k-pcts 5,10,20,40 \
-  --batch-size 4
+python scripts/experiments/run_parent_pythia_1b.py
+python scripts/experiments/run_parent_pythia_1_4b.py
+python scripts/experiments/run_parent_pythia_6_9b.py
+python scripts/experiments/run_parent_pythia_12b.py
 ```
 
-#### Step 3: Calibrate threshold and evaluate
+### 2. Run Target Audits
+Run the audit for a specific fine-tuned model. These can be run in parallel on different GPUs:
 
 ```bash
-python scripts/experiments/run_mia_experiment.py \
-  --train-scores data/scores/mimir_github_pythia_mink/train_scores.jsonl \
-  --test-scores  data/scores/mimir_github_pythia_mink/test_scores.jsonl \
-  --output-dir   outputs/runs/mimir_github_pythia_mink \
-  --primary-score min_k_20_logprob
+# Example: Audit the 6.9B UltraChat model
+python scripts/experiments/run_target_pkarypis_pythia_ultrachat.py
 ```
+
+Results are saved to:
+*   **Scores**: `data/scores/mimir_github_[model_slug]`
+*   **MIA Results**: `outputs/runs/mimir_github_[model_slug]/results.json`
+*   **Final Report**: `outputs/reports/target_membership_advantage_[model_slug]/summary.md`
 
 ---
 
-### Experiment 2 — Target model (nnheui/pythia-1.4b-sft-full) on the same shard
+### Available Target Audits
 
-Uses the same prepared dataset from Experiment 1, Step 1.
-
-#### Step 1: Score the target model
-
-```bash
-python scripts/scoring/extract_logprob_scores.py \
-  --model nnheui/pythia-1.4b-sft-full \
-  --train-file data/processed/mimir_github/train.jsonl \
-  --test-file  data/processed/mimir_github/test.jsonl \
-  --output-dir data/scores/mimir_github_nnheui_pythia_1_4b_sft_full \
-  --min-k-pcts 5,10,20,40 \
-  --batch-size 4
-```
-
-#### Step 2: Calibrate threshold and evaluate (with controls)
-
-```bash
-python scripts/experiments/run_mia_experiment.py \
-  --train-scores data/scores/mimir_github_nnheui_pythia_1_4b_sft_full/train_scores.jsonl \
-  --test-scores  data/scores/mimir_github_nnheui_pythia_1_4b_sft_full/test_scores.jsonl \
-  --output-dir   outputs/runs/mimir_github_nnheui_pythia_1_4b_sft_full \
-  --primary-score min_k_20_logprob \
-  --parent-results outputs/runs/mimir_github_pythia_mink/results.json \
-  --run-shuffled-control
-```
-
-`--parent-results` enables the parent-threshold transfer diagnostic.  
-`--run-shuffled-control` enables the shuffled-label null control.
-
-#### Step 3: Generate the parent vs target comparison report
-
-```bash
-python scripts/reports/compare_parent_target_advantage.py \
-  --parent-results outputs/runs/mimir_github_pythia_mink/results.json \
-  --target-results outputs/runs/mimir_github_nnheui_pythia_1_4b_sft_full/results.json \
-  --output-dir outputs/reports/target_membership_advantage_nnheui_pythia_1_4b_sft_full
-```
-
-Report: `outputs/reports/target_membership_advantage_nnheui_pythia_1_4b_sft_full/summary.md`
-
----
-
-### Experiment 3 — Nonmember-vs-nonmember null control
-
-Both pseudo-classes are drawn from the MIMIR GitHub **nonmember** pool. Labels
-are artificial — neither class is a real member. The distinguisher should show
-near-zero advantage here.
-
-#### Step 1: Prepare the null-control dataset
-
-```bash
-python scripts/data/prepare_mimir_github_nonmember_control.py \
-  --config github \
-  --ngram-split ngram_13_0.2 \
-  --num-train-per-class 170 \
-  --num-test-per-class 200 \
-  --seed 0 \
-  --output-dir data/processed/mimir_github_nonmember_control_seed0
-```
-
-#### Step 2: Score the parent model on control data
-
-```bash
-python scripts/scoring/extract_logprob_scores.py \
-  --model EleutherAI/pythia-1.4b \
-  --train-file data/processed/mimir_github_nonmember_control_seed0/train.jsonl \
-  --test-file  data/processed/mimir_github_nonmember_control_seed0/test.jsonl \
-  --output-dir data/scores/mimir_github_nonmember_control_seed0_pythia_1_4b \
-  --min-k-pcts 5,10,20,40 \
-  --batch-size 4
-```
-
-#### Step 3: Run parent threshold experiment on control data
-
-```bash
-python scripts/experiments/run_mia_experiment.py \
-  --train-scores data/scores/mimir_github_nonmember_control_seed0_pythia_1_4b/train_scores.jsonl \
-  --test-scores  data/scores/mimir_github_nonmember_control_seed0_pythia_1_4b/test_scores.jsonl \
-  --output-dir   outputs/runs/nonmember_control_seed0_pythia_1_4b \
-  --primary-score min_k_20_logprob
-```
-
-#### Step 4: Score the target model on control data
-
-```bash
-python scripts/scoring/extract_logprob_scores.py \
-  --model nnheui/pythia-1.4b-sft-full \
-  --train-file data/processed/mimir_github_nonmember_control_seed0/train.jsonl \
-  --test-file  data/processed/mimir_github_nonmember_control_seed0/test.jsonl \
-  --output-dir data/scores/mimir_github_nonmember_control_seed0_nnheui_pythia_1_4b_sft_full \
-  --min-k-pcts 5,10,20,40 \
-  --batch-size 4
-```
-
-#### Step 5: Run target threshold experiment on control data
-
-```bash
-python scripts/experiments/run_mia_experiment.py \
-  --train-scores data/scores/mimir_github_nonmember_control_seed0_nnheui_pythia_1_4b_sft_full/train_scores.jsonl \
-  --test-scores  data/scores/mimir_github_nonmember_control_seed0_nnheui_pythia_1_4b_sft_full/test_scores.jsonl \
-  --output-dir   outputs/runs/nonmember_control_seed0_nnheui_pythia_1_4b_sft_full \
-  --primary-score min_k_20_logprob
-```
-
-#### Step 6: Generate the null-control report
-
-```bash
-python scripts/reports/report_nonmember_control.py \
-  --parent-results outputs/runs/nonmember_control_seed0_pythia_1_4b/results.json \
-  --target-results outputs/runs/nonmember_control_seed0_nnheui_pythia_1_4b_sft_full/results.json \
-  --data-manifest  data/processed/mimir_github_nonmember_control_seed0/manifest.json \
-  --output-dir outputs/reports/nonmember_vs_nonmember_control_parent_target
-```
-
-Report: `outputs/reports/nonmember_vs_nonmember_control_parent_target/summary.md`
+| Size | Model Script |
+| :--- | :--- |
+| **1B** | `run_target_leogrin_pythia1b_hh_sft.py` |
+| **1.4B** | `run_target_hermaster_pythia1_4b_lamini_docs.py` |
+| | `run_target_linguacustodia_fin_pythia_1_4b.py` |
+| | `run_target_lomahony_pythia_1_4b_helpful_sft.py` |
+| | `run_target_lomahony_pythia_1_4b_helpful_dpo.py` |
+| | `run_target_kykim0_pythia_1_4b_tulu_v2_mix.py` |
+| | `run_target_nnheui_pythia_1_4b_sft_full.py` |
+| **6.9B** | `run_target_pkarypis_pythia_ultrachat.py` |
+| | `run_target_lomahony_pythia_6_9b_hh_sft.py` |
+| | `run_target_lomahony_pythia_6_9b_hh_dpo.py` |
+| | `run_target_allenai_pythia_6_9b_tulu.py` |
+| | `run_target_usvsnsp_pythia_6_9b_ppo.py` |
+| **12B** | `run_target_lomahony_pythia_12b_hh_sft.py` |
+| | `run_target_lomahony_pythia_12b_hh_dpo.py` |
 
 ---
 

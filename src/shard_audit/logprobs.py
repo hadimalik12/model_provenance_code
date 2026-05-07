@@ -28,6 +28,8 @@ def load_model_and_tokenizer(
     model_name: str,
     device,
     dtype_str: str = "auto",
+    load_in_8bit: bool = False,
+    tokenizer_name: Optional[str] = None,
 ):
     """Load a HuggingFace causal LM and its tokenizer.
 
@@ -36,7 +38,8 @@ def load_model_and_tokenizer(
     import torch
     from transformers import AutoTokenizer, AutoModelForCausalLM
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tok_load_name = tokenizer_name if tokenizer_name else model_name
+    tokenizer = AutoTokenizer.from_pretrained(tok_load_name)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         logger.info("pad_token was None; set to eos_token (%s)", tokenizer.eos_token)
@@ -51,13 +54,31 @@ def load_model_and_tokenizer(
     else:
         dtype = dtype_map.get(dtype_str, torch.float32)
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=dtype,
-        device_map={"": device},
-    )
+    # Only pass quantization/device_map arguments if needed
+    kwargs = {
+        "torch_dtype": dtype,
+        "low_cpu_mem_usage": True,
+    }
+    if load_in_8bit:
+        kwargs["load_in_8bit"] = True
+        kwargs["device_map"] = "auto"
+    else:
+        kwargs["device_map"] = {"": device}
+
+    try:
+        logger.info("Attempting to load model: %s", model_name)
+        model = AutoModelForCausalLM.from_pretrained(model_name, **kwargs)
+    except Exception as e:
+        err_msg = str(e).lower()
+        if "safetensors" in err_msg or "use_safetensors" in err_msg:
+            logger.warning("Safetensors loading/conversion failed, retrying with use_safetensors=False: %s", e)
+            kwargs["use_safetensors"] = False
+            model = AutoModelForCausalLM.from_pretrained(model_name, **kwargs)
+        else:
+            raise e
+
     model.eval()
-    logger.info("Loaded %s on %s with dtype=%s", model_name, device, dtype)
+    logger.info("Loaded %s on %s with dtype=%s (8bit=%s)", model_name, device, dtype, load_in_8bit)
     return model, tokenizer
 
 
@@ -91,8 +112,18 @@ def extract_token_logprobs(
         truncation=True,
         max_length=max_length,
     )
+    # Check if we have any tokens at all
+    if encodings["input_ids"].numel() == 0 or encodings["input_ids"].shape[1] == 0:
+        logger.warning("Batch of texts resulted in 0 tokens. Skipping.")
+        return [[] for _ in texts]
+
     input_ids = encodings["input_ids"].to(device)
     attention_mask = encodings["attention_mask"].to(device)
+
+    # L must be at least 2 for causal shift (need a prefix to score a suffix)
+    if input_ids.shape[1] < 2:
+        logger.warning("Batch sequence length < 2 (%d). First example IDs: %s", input_ids.shape[1], input_ids[0].tolist())
+        return [[] for _ in texts]
 
     with torch.no_grad():
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)

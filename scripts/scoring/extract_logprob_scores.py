@@ -107,6 +107,9 @@ def score_records(
         batch_lp = extract_token_logprobs(texts, model, tokenizer, device, max_length=max_length)
 
         for rec, lp in zip(batch, batch_lp):
+            if not lp:
+                logger.warning("Skipping example %s due to empty/too-short tokens.", rec["id"])
+                continue
             scores = compute_all_scores(rec["text"], lp, k_pcts=tuple(k_pcts))
             score_rec = {
                 "id": rec["id"],
@@ -153,6 +156,8 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--model", default="EleutherAI/pythia-1.4b")
+    p.add_argument("--tokenizer", default=None,
+                   help="Optional separate tokenizer name (if target is broken)")
     p.add_argument("--train-file", default="data/processed/mimir_github/train.jsonl")
     p.add_argument("--test-file", default="data/processed/mimir_github/test.jsonl")
     p.add_argument("--output-dir", default="data/scores/mimir_github_pythia_mink")
@@ -166,6 +171,8 @@ def parse_args():
                    help="Cap total examples per split (for smoke tests)")
     p.add_argument("--debug-examples", type=int, default=6,
                    help="Number of debug records to write")
+    p.add_argument("--load-in-8bit", action="store_true",
+                   help="Use 8-bit quantization (requires bitsandbytes)")
     p.add_argument("--max-length", type=int, default=512)
     p.add_argument("--seed", type=int, default=0)
     return p.parse_args()
@@ -184,6 +191,7 @@ def main():
     logger.info("Batch size:  %d", args.batch_size)
     logger.info("Device:      %s", args.device)
     logger.info("Dtype:       %s", args.dtype)
+    logger.info("8-bit:       %s", args.load_in_8bit)
     logger.info("Max examples: %s", args.max_examples)
 
     # Load data
@@ -199,7 +207,11 @@ def main():
     logger.info("\nLoading model %s...", args.model)
     device = get_device(args.device)
     logger.info("Device: %s", device)
-    model, tokenizer = load_model_and_tokenizer(args.model, device, args.dtype)
+    model, tokenizer = load_model_and_tokenizer(
+        args.model, device, args.dtype, 
+        load_in_8bit=args.load_in_8bit,
+        tokenizer_name=args.tokenizer
+    )
 
     import torch
     actual_dtype = next(model.parameters()).dtype
@@ -221,6 +233,10 @@ def main():
         debug_n=0, model_name=args.model,
         max_length=args.max_length,
     )
+
+    if not train_scores or not test_scores:
+        logger.error("No examples were successfully scored (Train: %d, Test: %d). Aborting.", len(train_scores), len(test_scores))
+        sys.exit(1)
 
     # Sanity checks on scores
     train_sc_check = check_score_records(train_scores, k_pcts=tuple(k_pcts))

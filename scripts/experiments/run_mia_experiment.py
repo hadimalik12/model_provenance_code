@@ -433,9 +433,10 @@ def main():
     )
 
     # Also copy report to docs/notes/
-    docs_path = os.path.join(
-        REPO_ROOT, "docs", "notes", "phase3_threshold_distinguisher_report.md"
-    )
+    docs_dir = os.path.join(REPO_ROOT, "docs", "notes")
+    os.makedirs(docs_dir, exist_ok=True)
+    docs_path = os.path.join(docs_dir, "phase3_threshold_distinguisher_report.md")
+    
     import shutil
     shutil.copy(report_path, docs_path)
     logger.info("Report copied to %s", docs_path)
