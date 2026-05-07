@@ -1,7 +1,7 @@
-"""Generate the master summary table for the Membership Inference Audit.
+"""Generate master summary tables for the Membership Inference Audit.
 
-This script crawls 'outputs/runs/', matches main experiments with their non-member 
-controls, and prints a formatted, fixed-width Markdown table.
+This script crawls 'outputs/runs/', groups experiments by dataset (GitHub, ArXiv),
+and prints formatted, fixed-width Markdown tables for each.
 """
 
 import json
@@ -31,13 +31,14 @@ def get_metrics(results_path, score_name):
             }
     return None
 
-def main():
-    # Identify all slugs by looking for mimir_github_* folders
+def generate_table(dataset_name):
+    # Identify all slugs for this dataset
     slugs = []
     if RUNS_DIR.exists():
+        prefix = f"mimir_{dataset_name}_"
         for d in RUNS_DIR.iterdir():
-            if d.is_dir() and d.name.startswith("mimir_github_") and not d.name.endswith("_mink"):
-                slugs.append(d.name.replace("mimir_github_", ""))
+            if d.is_dir() and d.name.startswith(prefix) and not d.name.endswith("_mink"):
+                slugs.append(d.name.replace(prefix, ""))
     
     # Define parents manually for grouping
     parents = [
@@ -47,56 +48,65 @@ def main():
         ("12B", "pythia_12b_mink", "EleutherAI/pythia-12b"),
     ]
 
-    # Prepare rows
     rows = []
+    has_any_data = False
+    
     for scale, p_slug, p_name in parents:
         # 1. Get Parent Row
-        p_main_path = RUNS_DIR / f"mimir_github_{p_slug}" / "results.json"
-        p_ctrl_path = RUNS_DIR / f"nonmember_control_seed0_{p_slug}" / "results.json"
+        p_main_path = RUNS_DIR / f"mimir_{dataset_name}_{p_slug}" / "results.json"
         
+        # Determine dataset-specific control path
+        if dataset_name == "github":
+            p_ctrl_path = RUNS_DIR / f"nonmember_control_seed0_{p_slug}" / "results.json"
+        else:
+            p_ctrl_path = RUNS_DIR / f"mimir_{dataset_name}_nonmember_control_seed0_{p_slug}" / "results.json"
+
         m_main = get_metrics(p_main_path, PRIMARY_SCORE)
         m_ctrl = get_metrics(p_ctrl_path, PRIMARY_SCORE)
 
         if m_main and m_ctrl:
-            rows.append([scale, f"**{p_name}** (Parent)", f"{m_ctrl['acc']:.1%}", f"{m_ctrl['adv']:.3f}", f"{m_main['acc']:.1%}", f"{m_main['adv']:.3f}"])
+            has_any_data = True
+            rows.append([scale, f"**{p_name}**", PRIMARY_SCORE, f"{m_ctrl['acc']:.1%}", f"{m_ctrl['adv']:.3f}", f"{m_main['acc']:.1%}", f"{m_main['adv']:.3f}"])
         
-        # 2. Get Children Targets
-        for slug in sorted(slugs):
-            is_match = False
-            if scale == "1B":
-                if "1b" in slug and "1_4b" not in slug: is_match = True
-            elif scale == "1.4B":
-                if "1_4b" in slug: is_match = True
-            elif scale == "6.9B":
-                if "6_9b" in slug or "ultrachat" in slug: is_match = True
-            elif scale == "12B":
-                if "12b" in slug: is_match = True
-            
-            if is_match:
-                c_main_path = RUNS_DIR / f"mimir_github_{slug}" / "results.json"
-                c_ctrl_path = RUNS_DIR / f"nonmember_control_seed0_{slug}" / "results.json"
-                m_main = get_metrics(c_main_path, PRIMARY_SCORE)
-                m_ctrl = get_metrics(c_ctrl_path, PRIMARY_SCORE)
+            # 2. Get Children Targets
+            for slug in sorted(slugs):
+                is_match = False
+                if scale == "1B":
+                    if "1b" in slug and "1_4b" not in slug: is_match = True
+                elif scale == "1.4B":
+                    if "1_4b" in slug: is_match = True
+                elif scale == "6.9B":
+                    if "6_9b" in slug or "ultrachat" in slug: is_match = True
+                elif scale == "12B":
+                    if "12b" in slug: is_match = True
                 
-                if m_main and m_ctrl:
-                    name = slug.replace("_pythia", "").replace("_1_4b", "").replace("_6_9b", "").replace("_12b", "").replace("1b", "")
-                    display_name = name.replace("_", " ").strip().title()
-                    rows.append(["", display_name, f"{m_ctrl['acc']:.1%}", f"{m_ctrl['adv']:.3f}", f"{m_main['acc']:.1%}", f"{m_main['adv']:.3f}"])
-        
-        rows.append(["---", "---", "---", "---", "---", "---"]) # Divider
+                if is_match:
+                    c_main_path = RUNS_DIR / f"mimir_{dataset_name}_{slug}" / "results.json"
+                    if dataset_name == "github":
+                        c_ctrl_path = RUNS_DIR / f"nonmember_control_seed0_{slug}" / "results.json"
+                    else:
+                        c_ctrl_path = RUNS_DIR / f"mimir_{dataset_name}_nonmember_control_seed0_{slug}" / "results.json"
 
-    if not rows:
-        print("No results found in outputs/runs/")
+                    m_main = get_metrics(c_main_path, PRIMARY_SCORE)
+                    m_ctrl = get_metrics(c_ctrl_path, PRIMARY_SCORE)
+                    
+                    if m_main and m_ctrl:
+                        name = slug.replace("_pythia", "").replace("_1_4b", "").replace("_6_9b", "").replace("_12b", "").replace("1b", "")
+                        display_name = name.replace("_", " ").strip().title()
+                        rows.append(["", display_name, PRIMARY_SCORE, f"{m_ctrl['acc']:.1%}", f"{m_ctrl['adv']:.3f}", f"{m_main['acc']:.1%}", f"{m_main['adv']:.3f}"])
+            
+            rows.append(["---", "---", "---", "---", "---", "---", "---"])
+
+    if not has_any_data:
         return
 
-    # Calculate column widths
-    headers = ["Scale", "Model Name", "Ctrl Acc", "Ctrl Adv", "Main Acc", "Main Adv"]
+    print(f"\n### AUDIT RESULTS: {dataset_name.upper()}")
+    headers = ["Scale", "Model Name", "Metric", "Ctrl Acc", "Ctrl Adv", "Main Acc", "Main Adv"]
     widths = [len(h) for h in headers]
     for row in rows:
         for i, val in enumerate(row):
             widths[i] = max(widths[i], len(str(val)))
 
-    # Print Table
     def print_row(items):
         formatted = " | ".join(str(item).ljust(widths[i]) for i, item in enumerate(items))
         print(f"| {formatted} |")
@@ -104,9 +114,13 @@ def main():
     print_row(headers)
     print_row(["-" * w for w in widths])
     for row in rows:
-        if row[0] == "---":
-            continue
+        if row[0] == "---": continue
         print_row(row)
+
+def main():
+    print("=== MEMBERSHIP INFERENCE AUDIT MASTER REPORT ===")
+    generate_table("github")
+    generate_table("arxiv")
 
 if __name__ == "__main__":
     main()
