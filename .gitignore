@@ -24,6 +24,7 @@ env/
 
 # Generated project artifacts
 /data/
+/docs/
 /outputs/
 
 # Model weights
