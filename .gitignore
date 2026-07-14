@@ -18,6 +18,10 @@ env/
 # Jupyter
 .ipynb_checkpoints/
 
+# Local editor and assistant settings
+/.claude/
+/.vscode/
+
 # Generated project artifacts
 /data/
 /outputs/

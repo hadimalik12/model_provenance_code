@@ -39,6 +39,7 @@ PIP="$ENV_DIR/bin/pip"
 hash -r
 
 "$PIP" install --upgrade pip
+"$PIP" install --upgrade setuptools
 PYTHONNOUSERSITE=1 "$PIP" install -r "$REPO_ROOT/requirements.txt"
 if [ -f "$REPO_ROOT/pyproject.toml" ] || [ -f "$REPO_ROOT/setup.py" ]; then
     PYTHONNOUSERSITE=1 "$PIP" install -e "$REPO_ROOT"
