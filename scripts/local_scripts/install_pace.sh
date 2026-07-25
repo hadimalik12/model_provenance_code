@@ -40,6 +40,7 @@ hash -r
 
 "$PIP" install --upgrade pip
 "$PIP" install --upgrade setuptools
+PYTHONNOUSERSITE=1 "$PIP" install torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cu121
 PYTHONNOUSERSITE=1 "$PIP" install -r "$REPO_ROOT/requirements.txt"
 if [ -f "$REPO_ROOT/pyproject.toml" ] || [ -f "$REPO_ROOT/setup.py" ]; then
     PYTHONNOUSERSITE=1 "$PIP" install -e "$REPO_ROOT"

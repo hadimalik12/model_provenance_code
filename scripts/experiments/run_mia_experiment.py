@@ -67,12 +67,14 @@ def _summary_table_md(results: list, split: str) -> str:
     rows = []
     for r in results:
         m = r[split]
+        auc_str = f"{m['auc']:.3f}" if m.get('auc') is not None else "N/A"
+        tpr1_str = f"{m['tpr_at_1_fpr']:.3f}" if m.get('tpr_at_1_fpr') is not None else "N/A"
         rows.append(
             f"| {r['score_name']} "
             f"| {m['accuracy']:.3f} "
             f"| {m['balanced_accuracy']:.3f} "
-            f"| {m['auc']:.3f} "
-            f"| {m['tpr_at_1_fpr']:.3f} "
+            f"| {auc_str} "
+            f"| {tpr1_str} "
             f"| {m['shard_advantage']:.3f} "
             f"| {r['calibrated_threshold']:.4f} |"
         )
@@ -94,6 +96,14 @@ def _write_report(
     test_adv = primary["test"]["shard_advantage"]
     test_tpr1 = primary["test"]["tpr_at_1_fpr"]
 
+    test_auc_str = f"{test_auc:.3f}" if test_auc is not None else "N/A"
+    test_tpr1_str = f"{test_tpr1:.3f}" if test_tpr1 is not None else "N/A"
+
+    tr_auc_str = f"{primary['train']['auc']:.4f}" if primary['train']['auc'] is not None else "N/A"
+    tr_tpr1_str = f"{primary['train']['tpr_at_1_fpr']:.4f}" if primary['train']['tpr_at_1_fpr'] is not None else "N/A"
+    te_auc_str = f"{primary['test']['auc']:.4f}" if primary['test']['auc'] is not None else "N/A"
+    te_tpr1_str = f"{primary['test']['tpr_at_1_fpr']:.4f}" if primary['test']['tpr_at_1_fpr'] is not None else "N/A"
+
     n_train = len(train_records)
     n_test = len(test_records)
     n_train_pos = sum(1 for r in train_records if r["label"] == 1)
@@ -114,9 +124,9 @@ def _write_report(
         f"- **Distinguisher:** threshold on `{primary_score}` calibrated on train, evaluated on test",
         f"- **Primary metric (test accuracy):** **{test_acc:.3f}**",
         f"- **Test balanced accuracy:** {test_bal:.3f}",
-        f"- **Test AUC:** {test_auc:.3f}",
+        f"- **Test AUC:** {test_auc_str}",
         f"- **Test shard advantage (TPR−FPR):** {test_adv:.3f}",
-        f"- **Test TPR @ 1% FPR:** {test_tpr1:.3f}",
+        f"- **Test TPR @ 1% FPR:** {test_tpr1_str}",
         "",
         f"The sanity check is **{'POSITIVE' if test_acc > 0.6 else 'WEAK/NEGATIVE'}**: "
         f"Pythia-1.4b assigns measurably higher {'MIN-K=20' if '20' in primary_score else ''} "
@@ -162,8 +172,8 @@ def _write_report(
         "|---|---:|",
         f"| Accuracy | {primary['train']['accuracy']:.4f} |",
         f"| Balanced accuracy | {primary['train']['balanced_accuracy']:.4f} |",
-        f"| AUC | {primary['train']['auc']:.4f} |",
-        f"| TPR @ 1% FPR | {primary['train']['tpr_at_1_fpr']:.4f} |",
+        f"| AUC | {tr_auc_str} |",
+        f"| TPR @ 1% FPR | {tr_tpr1_str} |",
         f"| Shard advantage | {primary['train']['shard_advantage']:.4f} |",
         f"| TP / FP / TN / FN | {primary['train']['tp']} / {primary['train']['fp']} / {primary['train']['tn']} / {primary['train']['fn']} |",
         "",
@@ -173,8 +183,8 @@ def _write_report(
         "|---|---:|",
         f"| Accuracy | {primary['test']['accuracy']:.4f} |",
         f"| Balanced accuracy | {primary['test']['balanced_accuracy']:.4f} |",
-        f"| AUC | {primary['test']['auc']:.4f} |",
-        f"| TPR @ 1% FPR | {primary['test']['tpr_at_1_fpr']:.4f} |",
+        f"| AUC | {te_auc_str} |",
+        f"| TPR @ 1% FPR | {te_tpr1_str} |",
         f"| Shard advantage | {primary['test']['shard_advantage']:.4f} |",
         f"| TP / FP / TN / FN | {primary['test']['tp']} / {primary['test']['fp']} / {primary['test']['tn']} / {primary['test']['fn']} |",
         "",
@@ -218,7 +228,7 @@ def _write_report(
         "",
         "## 8. Interpretation and Next Steps",
         "",
-        f"Test accuracy of **{test_acc:.3f}** ({test_acc*100:.1f}%) and AUC of **{test_auc:.3f}** "
+        f"Test accuracy of **{test_acc:.3f}** ({test_acc*100:.1f}%) and AUC of **{test_auc_str}** "
         f"confirm that Pythia-1.4b's per-token log-probabilities carry a statistically meaningful "
         f"signal distinguishing its GitHub training examples from nonmember examples.",
         "",
@@ -436,6 +446,7 @@ def main():
     docs_path = os.path.join(
         REPO_ROOT, "docs", "notes", "phase3_threshold_distinguisher_report.md"
     )
+    os.makedirs(os.path.dirname(docs_path), exist_ok=True)
     import shutil
     shutil.copy(report_path, docs_path)
     logger.info("Report copied to %s", docs_path)

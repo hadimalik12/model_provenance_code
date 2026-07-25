@@ -36,7 +36,22 @@ def load_model_and_tokenizer(
     import torch
     from transformers import AutoTokenizer, AutoModelForCausalLM
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+    except Exception as err:
+        base_fallback = "EleutherAI/pythia-1.4b"
+        if "1b" in model_name.lower() and "1.4" not in model_name.lower():
+            base_fallback = "EleutherAI/pythia-1b"
+        elif "6.9b" in model_name.lower():
+            base_fallback = "EleutherAI/pythia-6.9b"
+        elif "12b" in model_name.lower():
+            base_fallback = "EleutherAI/pythia-12b"
+        logger.warning(
+            "Failed to load tokenizer for '%s' (%s). Falling back to base tokenizer '%s'.",
+            model_name, err, base_fallback
+        )
+        tokenizer = AutoTokenizer.from_pretrained(base_fallback)
+
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
         logger.info("pad_token was None; set to eos_token (%s)", tokenizer.eos_token)
@@ -51,13 +66,20 @@ def load_model_and_tokenizer(
     else:
         dtype = dtype_map.get(dtype_str, torch.float32)
 
+    dev_str = str(device)
+    if "cuda" in dev_str:
+        device_map = "auto"
+    else:
+        device_map = {"": device}
+
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype=dtype,
-        device_map={"": device},
+        device_map=device_map,
     )
     model.eval()
-    logger.info("Loaded %s on %s with dtype=%s", model_name, device, dtype)
+    model_device = getattr(model, "device", device)
+    logger.info("Loaded %s on %s with dtype=%s", model_name, model_device, dtype)
     return model, tokenizer
 
 
@@ -91,8 +113,9 @@ def extract_token_logprobs(
         truncation=True,
         max_length=max_length,
     )
-    input_ids = encodings["input_ids"].to(device)
-    attention_mask = encodings["attention_mask"].to(device)
+    target_device = getattr(model, "device", device)
+    input_ids = encodings["input_ids"].to(target_device)
+    attention_mask = encodings["attention_mask"].to(target_device)
 
     with torch.no_grad():
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)

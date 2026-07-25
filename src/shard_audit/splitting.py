@@ -16,31 +16,42 @@ def _text_hash(text: str) -> str:
 def stratified_train_test_split(
     member_records: list,
     nonmember_records: list,
-    num_train_per_class: int,
-    num_test_per_class: int,
+    num_train_per_class: int = 100,
+    num_test_per_class: int = 100,
     seed: int = 0,
+    num_train_member: Optional[int] = None,
+    num_train_nonmember: Optional[int] = None,
+    num_test_member: Optional[int] = None,
+    num_test_nonmember: Optional[int] = None,
 ) -> tuple:
-    """Split member and nonmember records into balanced train/test sets.
+    """Split member and nonmember records into train/test sets.
 
     Args:
         member_records: dicts with at least 'text' and 'label'==1
         nonmember_records: dicts with at least 'text' and 'label'==0
-        num_train_per_class: examples per class in train
-        num_test_per_class: examples per class in test
+        num_train_per_class: default fallback per-class count for train
+        num_test_per_class: default fallback per-class count for test
         seed: RNG seed for determinism
+        num_train_member: exact member count for train
+        num_train_nonmember: exact non-member count for train
+        num_test_member: exact member count for test
+        num_test_nonmember: exact non-member count for test
 
     Returns:
         (train_records, test_records) — each a shuffled mix of member+nonmember
-
-    Raises:
-        ValueError if there are not enough examples or hash overlap exists.
     """
-    total_needed = num_train_per_class + num_test_per_class
-    for name, records in (("member", member_records), ("nonmember", nonmember_records)):
-        if len(records) < total_needed:
-            raise ValueError(
-                f"Not enough {name} records: need {total_needed}, got {len(records)}"
-            )
+    n_train_m = num_train_member if num_train_member is not None else num_train_per_class
+    n_train_nm = num_train_nonmember if num_train_nonmember is not None else num_train_per_class
+    n_test_m = num_test_member if num_test_member is not None else num_test_per_class
+    n_test_nm = num_test_nonmember if num_test_nonmember is not None else num_test_per_class
+
+    m_needed = n_train_m + n_test_m
+    nm_needed = n_train_nm + n_test_nm
+
+    if len(member_records) < m_needed:
+        raise ValueError(f"Not enough member records: need {m_needed}, got {len(member_records)}")
+    if len(nonmember_records) < nm_needed:
+        raise ValueError(f"Not enough nonmember records: need {nm_needed}, got {len(nonmember_records)}")
 
     rng = random.Random(seed)
 
@@ -51,8 +62,8 @@ def stratified_train_test_split(
         test = shuffled[n_train : n_train + n_test]
         return train, test
 
-    m_train, m_test = _select(member_records, num_train_per_class, num_test_per_class)
-    nm_train, nm_test = _select(nonmember_records, num_train_per_class, num_test_per_class)
+    m_train, m_test = _select(member_records, n_train_m, n_test_m)
+    nm_train, nm_test = _select(nonmember_records, n_train_nm, n_test_nm)
 
     # Verify no hash overlap between train and test
     train_hashes = {r["text_hash"] for r in m_train + nm_train}

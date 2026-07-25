@@ -13,14 +13,19 @@ def _hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def check_label_balance(records: list, name: str = "split") -> None:
-    """Assert equal numbers of label-1 and label-0 examples."""
+def check_label_balance(records: list, name: str = "split", allow_imbalanced: bool = True) -> None:
+    """Check numbers of label-1 and label-0 examples."""
     n1 = sum(1 for r in records if r.get("label") == 1)
     n0 = sum(1 for r in records if r.get("label") == 0)
-    assert n1 == n0, (
-        f"[{name}] Label imbalance: {n1} member vs {n0} nonmember. "
-        "Splits must be class-balanced."
-    )
+    if n1 != n0:
+        if allow_imbalanced:
+            import logging
+            logging.getLogger(__name__).warning("[%s] Asymmetric split: %d member vs %d nonmember.", name, n1, n0)
+        else:
+            assert n1 == n0, (
+                f"[{name}] Label imbalance: {n1} member vs {n0} nonmember. "
+                "Splits must be class-balanced."
+            )
 
 
 def check_no_text_overlap(

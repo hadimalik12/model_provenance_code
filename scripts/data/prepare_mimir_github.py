@@ -108,6 +108,10 @@ def parse_args():
                    help="N-gram split name (e.g. 'ngram_13_0.2')")
     p.add_argument("--num-train-per-class", type=int, default=100)
     p.add_argument("--num-test-per-class", type=int, default=100)
+    p.add_argument("--num-train-member", type=int, default=None,
+                   help="Exact member count for calibration (overrides num-train-per-class for members)")
+    p.add_argument("--num-train-nonmember", type=int, default=None,
+                   help="Exact non-member count for calibration (overrides num-train-per-class for nonmembers)")
     p.add_argument("--max-words", type=int, default=32)
     p.add_argument("--min-words", type=int, default=8)
     p.add_argument("--seed", type=int, default=0)
@@ -306,6 +310,8 @@ def main():
         nonmember_records=nonmember_records,
         num_train_per_class=args.num_train_per_class,
         num_test_per_class=args.num_test_per_class,
+        num_train_member=args.num_train_member,
+        num_train_nonmember=args.num_train_nonmember,
         seed=args.seed,
     )
 
