@@ -1,5 +1,5 @@
 """Tests for the domain-specific augmentation module."""
-from src.shard_audit.text_augmentations_domains import (
+from src.shard_audit.scoring.text_augmentations_domains import (
     augment_arxiv_4views,
     augment_math_4views,
     augment_wikipedia_4views,

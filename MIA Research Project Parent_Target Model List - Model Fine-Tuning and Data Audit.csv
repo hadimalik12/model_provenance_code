@@ -1,0 +1,41 @@
+"Parent Model (The ""Stolen"" Base)","Target Model (The ""Laundered"" Derivative)",Pre-training Data,Fine-Tuning Context
+Pythia-1B,Leogrin/eleuther-pythia1b-hh-sft,The Pile,Supervised fine-tuning (SFT) on the Anthropic Helpful and Harmless (HH) dataset.
+Pythia-1.4B,herMaster/pythia1.4B-finetuned-on-lamini-docs,The Pile,Domain-specific fine-tuning on Lamini documentation.
+,LinguaCustodia/fin-pythia-1.4b,The Pile,Domain-specific fine-tuning likely on financial (or potentially Finnish language) datasets.
+,lomahony/pythia-1.4b-helpful-sft,The Pile,Supervised fine-tuning on the Anthropic Helpful dataset.
+,lomahony/pythia-1.4b-helpful-dpo,The Pile,Aligned using Direct Preference Optimization (DPO) on the Anthropic dataset.
+,kykim0/pythia-1.4b-tulu-v2-mix,The Pile,Instruction-tuned using the comprehensive Tulu v2 dataset mix.
+,nnheui/pythia-1.4b-sft-full,The Pile,A general supervised fine-tuning pass over the full model weights.
+Pythia-6.9B,lomahony/eleuther-pythia6.9b-hh-sft,The Pile,Supervised fine-tuning on the Anthropic HH dataset.
+,lomahony/eleuther-pythia6.9b-hh-dpo,The Pile,Aligned using DPO on the Anthropic HH dataset.
+,allenai/open-instruct-pythia-6.9b-tulu,The Pile,Instruction-tuned by AllenAI using the Tulu dataset.
+,usvsnsp/pythia-6.9b-ppo,The Pile,"Aligned using Proximal Policy Optimization (PPO), a form of RLHF."
+,pkarypis/pythia-ultrachat,The Pile,Fine-tuned for multi-turn dialogue using the UltraChat dataset.
+Pythia-12B,lomahony/eleuther-pythia12b-hh-sft,The Pile,Supervised fine-tuning on the Anthropic HH dataset.
+,lomahony/eleuther-pythia12b-hh-dpo,The Pile,Aligned using DPO on the Anthropic HH dataset.
+Pythia-1B-Deduped,trl-lib/pythia-1b-deduped-tldr-sft,The Pile (Deduplicated),Fine-tuned specifically for summarization tasks using the Reddit TL;DR dataset.
+Pythia-1.4B-Deduped,HWERI/pythia-1.4b-deduped-sharegpt,The Pile (Deduplicated),Fine-tuned on scraped ChatGPT conversations to act as a chatbot.
+,naxautify/pythia-1.4b-deduped-8k,The Pile (Deduplicated),"Continued training designed to extend the model's context window to 8,000 tokens."
+,lambdalabs/pythia-1.4b-deduped-synthetic-instruct,The Pile (Deduplicated),Instruction-tuned using AI-generated (synthetic) training data.
+Pythia-6.9B-Deduped,lambdalabs/pythia-6.9b-deduped_alpaca,The Pile (Deduplicated),Fine-tuned on the Stanford Alpaca instruction-following dataset.
+,pszemraj/pythia-6.9b-HC3,The Pile (Deduplicated),Fine-tuned on the Human ChatGPT Comparison Corpus (HC3).
+,dvruette/oasst-pythia-6.9b-4000-steps,The Pile (Deduplicated),Fine-tuned using the crowd-sourced OpenAssistant dataset.
+,cc0de/EleutherAI-pythia-6.9b-deduped-full-ft-clinical,The Pile (Deduplicated),Heavy domain-specific fine-tuning on medical/clinical texts.
+,CarperAI/pythia-6.9b-deduped-4k,The Pile (Deduplicated),"Continued training to extend the context window to 4,000 tokens."
+,HuggingFaceH4/EleutherAI_pythia-6.9b...sft__tldr,The Pile (Deduplicated),Supervised fine-tuning on the Reddit TL;DR summarization dataset.
+,trl-lib/pythia-6.9b-deduped-tldr-offline-dpo,The Pile (Deduplicated),DPO alignment applied to the summarization dataset.
+,EleutherAI/pythia-intervention-6.9b-deduped,The Pile (Deduplicated),An experimental intervention model (likely mechanistic interpretability modifications).
+Pythia-12B-Deduped,OpenAssistant/pythia-12b-sft-v8-7k-steps,The Pile (Deduplicated),Supervised fine-tuning on OpenAssistant conversations.
+,OpenAssistant/pythia-12b-sft-v8-rlhf-2k-steps,The Pile (Deduplicated),Full Reinforcement Learning from Human Feedback (RLHF) on OpenAssistant data.
+,lambdalabs/pythia-12b-deduped-synthetic-instruct,The Pile (Deduplicated),Instruction-tuned using synthetic AI-generated data.
+OLMo-7B,allenai/OLMo-7B-SFT-hf,Dolma,Standard Supervised Fine-Tuning.
+,allenai/OLMo-7B-Instruct-hf,Dolma,Fully aligned instruction-following version.
+OLMo-7B (0424),allenai/OLMo-7B-0424-SFT-hf,Dolma,Standard SFT applied to the April 2024 checkpoint.
+,allenai/OLMo-7B-0424-Instruct-hf,Dolma,Instruct alignment applied to the April 2024 checkpoint.
+OLMo-7B (0724),allenai/OLMo-7B-0724-SFT-hf,Dolma,Standard SFT applied to the July 2024 checkpoint.
+,allenai/OLMo-7B-0724-Instruct-hf,Dolma,Instruct alignment applied to the July 2024 checkpoint.
+OLMo-2-7B,allenai/OLMo-2-1124-7B-SFT,Dolma,Supervised Fine-Tuning on the version 2 architecture.
+,allenai/OLMo-2-1124-7B-DPO,Dolma,DPO alignment on the version 2 architecture.
+,allenai/OLMo-2-1124-7B-Instruct,Dolma,Fully aligned instruction model for version 2.
+,Neelectric/OLMo-2-1124-7B-Instruct_SFT,Dolma,Third-party custom SFT on the Instruct base.
+,Neelectric/OLMo-2-1124-7B-Instruct_GRPO,Dolma,Aligned using Group Relative Policy Optimization (GRPO).

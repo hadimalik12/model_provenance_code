@@ -1,0 +1,17 @@
+experiment:
+  id: table_03_parent_signal
+  purpose: Base Pythia-1.4B MIMIR GitHub shard-signal sanity check
+  variant: vanilla
+model:
+  parent: EleutherAI/pythia-1.4b
+dataset:
+  source: iamgroot42/mimir
+  config: github
+  member_label: 1
+  nonmember_label: 0
+scoring:
+  method: min_k_logprob
+  primary_score: min_k_20_logprob
+  min_k_percentages: [5, 10, 20, 40]
+outputs:
+  run_id: vanilla_pythia_1_4b_seed0

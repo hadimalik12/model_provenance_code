@@ -7,7 +7,7 @@ REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from src.shard_audit.text_augmentations import augment_code_snippet_4views, detect_language
+from src.shard_audit.scoring.text_augmentations import augment_code_snippet_4views, detect_language
 
 TEST_SAMPLES = {
     "python": """def process_dataset(items):

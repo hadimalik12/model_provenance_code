@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Phase 1 local environment setup wrapper.
-# On PACE/HPC: run scripts/local_scripts/install_pace.sh instead for
+# On PACE/HPC: run scripts/cluster/install_pace.sh instead for
 # full conda env creation with module loading.
 set -euo pipefail
 
@@ -13,7 +13,7 @@ echo "[setup] python:    $(python --version 2>&1 || echo 'not found')"
 # Existing HPC setup script: call if present and we're on a system
 # that has the 'module' command.  Skip silently otherwise.
 # ------------------------------------------------------------------ #
-PACE_SCRIPT="$REPO_ROOT/scripts/local_scripts/install_pace.sh"
+PACE_SCRIPT="$REPO_ROOT/scripts/cluster/install_pace.sh"
 if [[ -f "$PACE_SCRIPT" ]] && command -v module >/dev/null 2>&1; then
     echo "[setup] HPC 'module' command detected — delegating to $PACE_SCRIPT"
     bash "$PACE_SCRIPT"
@@ -42,18 +42,14 @@ fi
 # ------------------------------------------------------------------ #
 echo "[setup] Creating required directories ..."
 mkdir -p \
-    "$REPO_ROOT/data/raw" \
-    "$REPO_ROOT/data/processed" \
-    "$REPO_ROOT/data/scores" \
-    "$REPO_ROOT/outputs/runs" \
-    "$REPO_ROOT/outputs/reports" \
-    "$REPO_ROOT/outputs/figures"
+    "$REPO_ROOT/artifacts" \
+    "$REPO_ROOT/.cache/huggingface"
 
 # ------------------------------------------------------------------ #
 # Set HF_HOME if not already set
 # ------------------------------------------------------------------ #
 if [[ -z "${HF_HOME:-}" ]]; then
-    export HF_HOME="$REPO_ROOT/data/.hf_home"
+    export HF_HOME="$REPO_ROOT/.cache/huggingface"
     mkdir -p "$HF_HOME"
     echo "[setup] HF_HOME set to $HF_HOME"
 fi

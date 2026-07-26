@@ -23,9 +23,9 @@ env/
 /.vscode/
 
 # Generated project artifacts
-/data/
-/docs/
-/outputs/
+/.cache/
+/artifacts/*
+!/artifacts/.gitkeep
 
 # Model weights
 *.pt

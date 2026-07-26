@@ -1,0 +1,17 @@
+experiment:
+  id: table_02_target_provenance
+  purpose: Fine-tuned Pythia target provenance on MIMIR GitHub
+  variant: augmented
+dataset:
+  source: iamgroot42/mimir
+  config: github
+  split: ngram_13_0.2
+  train_members: 560
+  train_nonmembers: 340
+  test_per_class: 400
+scoring:
+  method: text_augmentation
+  n_augmentations: 4
+  primary_score: aug_min_k_20_logprob_mean
+outputs:
+  run_id: augmented_seed0

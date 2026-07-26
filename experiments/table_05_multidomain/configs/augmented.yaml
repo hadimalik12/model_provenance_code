@@ -1,0 +1,18 @@
+experiment:
+  id: table_05_multidomain
+  purpose: Parent-head conservative-policy multi-domain MIMIR shard-signal audit
+  variant: conservative_policy_parent_head
+dataset:
+  source: iamgroot42/mimir
+  split: ngram_13_0.2
+  domains: [arxiv, dm_mathematics, github, pile_cc, wikipedia_en]
+  train_per_class: 300
+  test_per_class: 400
+scoring:
+  parent_model: EleutherAI/pythia-1.4b
+  target_model: herMaster/pythia1.4B-finetuned-on-lamini-docs
+  scoring_head: parent_output_head
+  methods: [min_k_20_logprob, min_k_40_logprob, safe_full_min_k_20_logprob_mean, safe_full_min_k_40_logprob_mean]
+  n_augmentations: 4
+outputs:
+  run_id: conservative_policy_parent_head_seed0

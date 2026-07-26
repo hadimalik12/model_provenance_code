@@ -1,0 +1,14 @@
+experiment:
+  id: table_01_imagenet
+  purpose: ViT ImageNet shard-provenance audit
+  variant: augmented_logprob
+dataset:
+  source: ImageNet-1K
+  train_shards: [0, 1, 2, 3, 4]
+  validation_shards: [0, 1]
+scoring:
+  method: augmented_parent_head_logprob
+  n_augmentations: 8
+  primary_score: aug_logprob_mean
+outputs:
+  run_id: augmented_logprob_seed0

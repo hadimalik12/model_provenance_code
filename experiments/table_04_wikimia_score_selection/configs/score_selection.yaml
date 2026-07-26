@@ -1,0 +1,12 @@
+experiment:
+  id: table_04_wikimia_score_selection
+  purpose: Compare membership scores on WikiMIA
+  variant: paper_style
+dataset:
+  source: WikiMIA
+  split: WikiMIA_length32
+scoring:
+  methods: [mean_logprob, min_k_5_logprob, min_k_10_logprob, min_k_20_logprob, min_k_40_logprob]
+  primary_score: min_k_20_logprob
+outputs:
+  run_id: score_selection_length32
