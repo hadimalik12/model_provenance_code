@@ -289,6 +289,8 @@ def parse_args():
     p.add_argument("--run-shuffled-control", action="store_true",
                    help="Run shuffled-label control to verify no label leakage")
     p.add_argument("--shuffled-seed", type=int, default=42)
+    p.add_argument("--no-copy-report-to-docs", action="store_true",
+                   help="Keep the per-run report in --output-dir instead of overwriting docs/notes")
     return p.parse_args()
 
 
@@ -336,7 +338,13 @@ def main():
         logger.info("\n=== Shuffled-Label Control ===")
         rng = random.Random(args.shuffled_seed)
         shuffled_train_labels = list(train_labels)
+        shuffled_test_labels = list(test_labels)
         rng.shuffle(shuffled_train_labels)
+        # The control must also break the member/nonmember association on the
+        # held-out split.  Shuffling only calibration labels leaves the real
+        # test labels intact and can retain genuine membership advantage at an
+        # accidentally selected threshold.
+        rng.shuffle(shuffled_test_labels)
         shuffled_results = []
         for key in score_keys:
             if key not in train_records[0]:
@@ -345,7 +353,7 @@ def main():
             test_sc = [r[key] for r in test_records]
             res = run_distinguisher(
                 shuffled_train_labels, train_sc,
-                test_labels, test_sc,
+                shuffled_test_labels, test_sc,
                 score_name=key,
                 criterion=args.criterion,
                 n_thresholds=args.n_thresholds,
@@ -442,19 +450,23 @@ def main():
         all_results, args.primary_score, train_records, test_records, args, args.output_dir
     )
 
-    # Also copy report to docs/notes/
-    docs_path = os.path.join(
-        REPO_ROOT, "docs", "notes", "phase3_threshold_distinguisher_report.md"
-    )
-    os.makedirs(os.path.dirname(docs_path), exist_ok=True)
-    import shutil
-    shutil.copy(report_path, docs_path)
-    logger.info("Report copied to %s", docs_path)
+    docs_path = None
+    if not args.no_copy_report_to_docs:
+        # Preserve the historical default for existing one-off runs.  Batch
+        # runners should opt out so one model's report does not overwrite another.
+        docs_path = os.path.join(
+            REPO_ROOT, "docs", "notes", "phase3_threshold_distinguisher_report.md"
+        )
+        os.makedirs(os.path.dirname(docs_path), exist_ok=True)
+        import shutil
+        shutil.copy(report_path, docs_path)
+        logger.info("Report copied to %s", docs_path)
 
     print("\n=== DONE ===")
     print(f"  Results:  {results_path}")
     print(f"  Report:   {report_path}")
-    print(f"  Docs:     {docs_path}")
+    if docs_path:
+        print(f"  Docs:     {docs_path}")
 
 
 if __name__ == "__main__":

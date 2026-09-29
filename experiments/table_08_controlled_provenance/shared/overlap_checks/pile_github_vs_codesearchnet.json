@@ -1,0 +1,52 @@
+{
+  "scope": "official EleutherAI/pile refs/convert/parquet github/partial/train shards, not full 95 GiB GitHub component or full Pile-CC",
+  "pile_shards": [
+    "0000.parquet",
+    "0001.parquet",
+    "0002.parquet",
+    "0003.parquet",
+    "0004.parquet",
+    "0005.parquet",
+    "0006.parquet",
+    "0007.parquet",
+    "0008.parquet",
+    "0009.parquet"
+  ],
+  "pile_documents": 416000,
+  "pile_python_language_documents": 35533,
+  "codesearchnet_shards": [
+    "train-00000-of-00003.parquet",
+    "train-00001-of-00003.parquet",
+    "train-00002-of-00003.parquet"
+  ],
+  "codesearchnet_rows": 412178,
+  "codesearchnet_old_pilot_eligible_rows": 243945,
+  "codesearchnet_rows_with_repo_in_pile_sample": 640,
+  "codesearchnet_eligible_rows_with_repo_in_pile_sample": 329,
+  "codesearchnet_exact_function_substring_matches": 591,
+  "codesearchnet_eligible_exact_function_substring_matches": 296,
+  "codesearchnet_whitespace_insensitive_function_matches": 598,
+  "codesearchnet_eligible_whitespace_insensitive_matches": 303,
+  "match_examples": [
+    {
+      "repository": "timothyb0912/pylogit",
+      "code_prefix": "def get_dataframe_from_data(data):\n    \"\"\"\n    Parameters\n    ----------\n    data : string or pandas"
+    },
+    {
+      "repository": "timothyb0912/pylogit",
+      "code_prefix": "def ensure_object_is_ordered_dict(item, title):\n    \"\"\"\n    Checks that the item is an OrderedDict. "
+    },
+    {
+      "repository": "timothyb0912/pylogit",
+      "code_prefix": "def ensure_object_is_string(item, title):\n    \"\"\"\n    Checks that the item is a string. If not, rais"
+    },
+    {
+      "repository": "timothyb0912/pylogit",
+      "code_prefix": "def ensure_object_is_ndarray(item, title):\n    \"\"\"\n    Ensures that a given mapping matrix is a dens"
+    },
+    {
+      "repository": "timothyb0912/pylogit",
+      "code_prefix": "def ensure_columns_are_in_dataframe(columns,\n                                    dataframe,\n        "
+    }
+  ]
+}

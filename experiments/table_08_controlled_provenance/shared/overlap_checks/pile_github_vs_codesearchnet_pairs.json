@@ -1,0 +1,16 @@
+{
+  "scope": "CodeSearchNet Python train rows eligible under old pilot filters versus 416,000 Pile GitHub partial documents; repository unrestricted; not full Pile or Pile-CC",
+  "normalization": "strip field ends, then remove all whitespace; preserve case and punctuation",
+  "codesearchnet_train_rows": 412178,
+  "eligible_pairs": 243945,
+  "unique_normalized_pairs": 243945,
+  "pairs_whose_prompt_is_embedded_in_response": 243945,
+  "prompt_found_anywhere": 3335,
+  "response_found_anywhere": 1330,
+  "both_fields_found_anywhere_maximum_pair_overlap_in_sample": 1330,
+  "both_fields_found_in_same_pile_document": 1330,
+  "prompt_only": 2005,
+  "response_only": 0,
+  "neither": 240610,
+  "matching_method": "Aho-Corasick enumerates overlapping anchors; each candidate is verified against the complete normalized field"
+}

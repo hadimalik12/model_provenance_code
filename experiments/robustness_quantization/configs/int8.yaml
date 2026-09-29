@@ -1,0 +1,44 @@
+experiment:
+  id: robustness_quantization
+  purpose: Test whether known Pythia lineage remains detectable after LLM.int8 quantization
+  variant: bitsandbytes_llm_int8
+  operation: post_training_weight_quantization
+  seed: 0
+
+models:
+  parent: EleutherAI/pythia-1.4b
+  target: herMaster/pythia1.4B-finetuned-on-lamini-docs
+  representations:
+    - name: parent_fp16
+      model: EleutherAI/pythia-1.4b
+      quantization: none
+      dtype: float16
+    - name: target_fp16
+      model: herMaster/pythia1.4B-finetuned-on-lamini-docs
+      quantization: none
+      dtype: float16
+    - name: target_int8
+      model: herMaster/pythia1.4B-finetuned-on-lamini-docs
+      quantization: int8
+      # Weights are LLM.int8; residual/non-linear modules use FP32 to avoid
+      # FP16 overflow in quantized inference on PACE GPUs.
+      dtype: float32
+
+dataset:
+  source: iamgroot42/mimir
+  config: github
+  split: ngram_13_0.2
+  calibration_members: 560
+  calibration_nonmembers: 340
+  heldout_per_class: 400
+  max_words: 64
+  nonmember_control_train_per_class: 150
+  nonmember_control_test_per_class: 150
+
+scoring:
+  primary: min_k_20_logprob
+  dtype: float16
+  batch_size: 4
+
+outputs:
+  run_id: int8_pythia1_4b_lamini_seed0

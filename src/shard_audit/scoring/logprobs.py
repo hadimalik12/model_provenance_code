@@ -28,6 +28,7 @@ def load_model_and_tokenizer(
     model_name: str,
     device,
     dtype_str: str = "auto",
+    quantization: str = "none",
 ):
     """Load a HuggingFace causal LM and its tokenizer.
 
@@ -72,14 +73,33 @@ def load_model_and_tokenizer(
     else:
         device_map = {"": device}
 
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=dtype,
-        device_map=device_map,
-    )
+    model_kwargs = {
+        "torch_dtype": dtype,
+        "device_map": device_map,
+    }
+    if quantization == "int8":
+        if "cuda" not in dev_str:
+            raise ValueError("LLM.int8 quantization requires a CUDA device.")
+        try:
+            from transformers import BitsAndBytesConfig
+        except ImportError as err:
+            raise RuntimeError(
+                "INT8 loading requires transformers BitsAndBytesConfig and bitsandbytes."
+            ) from err
+        model_kwargs["quantization_config"] = BitsAndBytesConfig(
+            load_in_8bit=True,
+            llm_int8_threshold=6.0,
+        )
+    elif quantization != "none":
+        raise ValueError(f"Unsupported quantization mode: {quantization!r}")
+
+    model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
     model.eval()
     model_device = getattr(model, "device", device)
-    logger.info("Loaded %s on %s with dtype=%s", model_name, model_device, dtype)
+    logger.info(
+        "Loaded %s on %s with dtype=%s quantization=%s",
+        model_name, model_device, dtype, quantization,
+    )
     return model, tokenizer
 
 
@@ -126,6 +146,16 @@ def extract_token_logprobs(
     with torch.no_grad():
         outputs = model(input_ids=input_ids, attention_mask=attention_mask)
         logits = outputs.logits  # (B, L, V)
+
+    # Quantized kernels can fail numerically without raising an exception.
+    # Persisting NaN score records would make a completed Slurm job look valid
+    # and invalidate the downstream audit, so fail at the source instead.
+    if not torch.isfinite(logits).all():
+        finite_fraction = torch.isfinite(logits).float().mean().item()
+        raise FloatingPointError(
+            "Model produced non-finite logits "
+            f"(finite fraction: {finite_fraction:.6f})."
+        )
 
     # Causal shift: logits[:, :-1] predict input_ids[:, 1:]
     shift_logits = logits[:, :-1, :]          # (B, L-1, V)

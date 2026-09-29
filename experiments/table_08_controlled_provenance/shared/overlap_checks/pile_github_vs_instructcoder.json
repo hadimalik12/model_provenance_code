@@ -1,0 +1,37 @@
+{
+  "scope": "All InstructCoder train rows versus the ten available converted Pile GitHub partial shards; exact full-code substring after removing whitespace, not full Pile-CC or full 95 GiB GitHub component",
+  "instructcoder_train_rows": 108391,
+  "pile_github_documents": 416000,
+  "anchors": 214868,
+  "pile_documents_with_anchor_hit": 6392,
+  "rows_with_full_input_code_match": 3,
+  "rows_with_full_output_code_match": 1,
+  "rows_with_either_full_code_match": 4,
+  "match_examples": [
+    {
+      "row": 11831,
+      "field": "input",
+      "code_prefix": "fromdjango.utils.translationimportugettextas_defmy_view(request):output=_(\"Welcometomysite.\")returnH"
+    },
+    {
+      "row": 13626,
+      "field": "input",
+      "code_prefix": "fromdjango.contrib.auth.modelsimportAbstractUserclassUser(AbstractUser):pass"
+    },
+    {
+      "row": 8777,
+      "field": "output",
+      "code_prefix": "importsphinx_rtd_themehtml_theme='sphinx_rtd_theme'html_theme_path=[sphinx_rtd_theme.get_html_theme_"
+    },
+    {
+      "row": 8777,
+      "field": "output",
+      "code_prefix": "importsphinx_rtd_themehtml_theme='sphinx_rtd_theme'html_theme_path=[sphinx_rtd_theme.get_html_theme_"
+    },
+    {
+      "row": 69132,
+      "field": "input",
+      "code_prefix": "deflong_function_name(var_one,var_two,var_three,var_four):print(var_one)"
+    }
+  ]
+}

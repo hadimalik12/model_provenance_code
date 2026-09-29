@@ -162,6 +162,12 @@ def parse_args():
     p.add_argument("--device", default="auto")
     p.add_argument("--dtype", default="auto",
                    choices=["auto", "float16", "bfloat16", "float32"])
+    p.add_argument(
+        "--quantization",
+        default="none",
+        choices=["none", "int8"],
+        help="Optional inference-time weight quantization. int8 uses bitsandbytes LLM.int8.",
+    )
     p.add_argument("--max-examples", type=int, default=None,
                    help="Cap total examples per split (for smoke tests)")
     p.add_argument("--debug-examples", type=int, default=6,
@@ -184,6 +190,7 @@ def main():
     logger.info("Batch size:  %d", args.batch_size)
     logger.info("Device:      %s", args.device)
     logger.info("Dtype:       %s", args.dtype)
+    logger.info("Quantization: %s", args.quantization)
     logger.info("Max examples: %s", args.max_examples)
 
     # Load data
@@ -199,7 +206,9 @@ def main():
     logger.info("\nLoading model %s...", args.model)
     device = get_device(args.device)
     logger.info("Device: %s", device)
-    model, tokenizer = load_model_and_tokenizer(args.model, device, args.dtype)
+    model, tokenizer = load_model_and_tokenizer(
+        args.model, device, args.dtype, quantization=args.quantization
+    )
 
     import torch
     actual_dtype = next(model.parameters()).dtype
@@ -273,6 +282,8 @@ def main():
         "test_file": os.path.abspath(args.test_file),
         "device": str(device),
         "dtype": str(actual_dtype),
+        "quantization": args.quantization,
+        "is_loaded_in_8bit": bool(getattr(model, "is_loaded_in_8bit", False)),
         "batch_size": args.batch_size,
         "max_length": args.max_length,
         "k_pcts": k_pcts,

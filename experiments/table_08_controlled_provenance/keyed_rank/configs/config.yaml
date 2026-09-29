@@ -1,0 +1,36 @@
+artifact_root: artifacts/table_08_controlled_provenance/keyed_rank/csn_filtered_seed0
+source:
+  dataset: claudios/code_search_net
+  subset: python
+  format: codesearchnet
+  split: train
+  revision: a4ee8053e119ef04ee3d491ffef05bcf2725ae82
+  local_jsonl: artifacts/table_08_controlled_provenance/shared/csn_filtered_v1/eligible.jsonl
+  filter_manifest: artifacts/table_08_controlled_provenance/shared/csn_filtered_v1/manifest.json
+  n_per_arm: 20000
+  calibration_per_arm: 2000
+  test_per_arm: 2000
+  max_prompt_chars: 300
+  max_response_chars: 1100
+training:
+  max_length: 384
+  batch_size: 1
+  grad_accumulation: 8
+  learning_rate: 0.00002
+  epochs: 1
+  optimizer: paged_adamw_8bit
+  dtype: float16
+  seed: 42
+downstream:
+  max_examples: 4000
+  validation_examples: 200
+  epochs: 1
+families:
+  1b: EleutherAI/pythia-1b
+  1_4b: EleutherAI/pythia-1.4b
+profiles:
+  1b:
+    - hh_sft
+  1_4b:
+    - helpful_sft
+    - tulu_sft

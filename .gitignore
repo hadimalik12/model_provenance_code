@@ -12,6 +12,7 @@ build/
 # Environments
 .env
 .venv/
+.venv_pace/
 venv/
 env/
 
