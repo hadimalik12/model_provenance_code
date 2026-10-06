@@ -22,6 +22,10 @@ Read [the experiment map](docs/EXPERIMENTS.md) for the precise paper-to-code
 mapping and [the architecture guide](docs/architecture/repository-map.md) for
 the repository layout.
 
+The [controlled watermark-inheritance manuscript fragment](docs/manuscript/watermark_inheritance/README.md)
+provides the proposed Section 5.3.1 with verified run-by-run Dolly and UltraChat
+tables and instructions for insertion into the manuscript source.
+
 ## Running On PACE
 
 ```bash
