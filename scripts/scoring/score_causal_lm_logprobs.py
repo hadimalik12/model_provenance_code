@@ -1,18 +1,8 @@
 """Extract per-token log-probability scores from a causal LM for MIA.
 
-Loads train.jsonl and test.jsonl produced by prepare_mimir_domain.py,
-scores each example with the parent model (default: EleutherAI/pythia-1.4b),
-and writes JSONL score files plus debug examples.
-
-Usage:
-    python scripts/scoring/score_causal_lm_logprobs.py \\
-        --model EleutherAI/pythia-1.4b \\
-        --train-file data/processed/mimir_github_phase2_tiny/train.jsonl \\
-        --test-file  data/processed/mimir_github_phase2_tiny/test.jsonl \\
-        --output-dir data/scores/mimir_github_pythia_mink_phase2_tiny \\
-        --min-k-pcts 5,10,20,40 \\
-        --batch-size 1 \\
-        --debug-examples 6
+Loads explicit construction/evaluation JSONL files and writes per-example
+scores plus a run manifest. Paths are required to prevent accidental reuse of
+stale development data.
 """
 
 import argparse
@@ -110,6 +100,7 @@ def score_records(
             scores = compute_all_scores(rec["text"], lp, k_pcts=tuple(k_pcts))
             score_rec = {
                 "id": rec["id"],
+                **({"pair_id": rec["pair_id"]} if "pair_id" in rec else {}),
                 "label": rec["label"],
                 "phase_split": rec.get("phase_split", ""),
                 "text_hash": rec["text_hash"],
@@ -152,10 +143,10 @@ def parse_args():
         description="Extract per-token log-probability scores from a causal LM.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument("--model", default="EleutherAI/pythia-1.4b")
-    p.add_argument("--train-file", default="data/processed/mimir_github/train.jsonl")
-    p.add_argument("--test-file", default="data/processed/mimir_github/test.jsonl")
-    p.add_argument("--output-dir", default="data/scores/mimir_github_pythia_mink")
+    p.add_argument("--model", required=True)
+    p.add_argument("--train-file", required=True)
+    p.add_argument("--test-file", required=True)
+    p.add_argument("--output-dir", required=True)
     p.add_argument("--min-k-pcts", default="5,10,20,40",
                    help="Comma-separated MIN-K percentages")
     p.add_argument("--batch-size", type=int, default=1)

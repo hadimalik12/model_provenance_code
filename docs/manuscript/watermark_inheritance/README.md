@@ -7,10 +7,11 @@ notation, and `Verdict / Correct?` conventions.
 
 ## Manuscript integration
 
-This repository contains an older `Causal_Model_Provenance.pdf`, whose LLM
-experiments are Section 4.2, but no manuscript `.tex`, `.bib`, or document class.
-The author-supplied newer experiment-section source and `Model_Provenance.pdf`
-place these experiments in Section 5.3 and include the INT8 subsection.
+An earlier repository revision contained an obsolete
+`Causal_Model_Provenance.pdf`, whose LLM experiments were Section 4.2, but no
+manuscript `.tex`, `.bib`, or document class. The author-supplied newer
+experiment-section source and submitted `Model_Provenance.pdf` place these
+experiments in Section 5.3 and include the INT8 subsection.
 
 In that newer manuscript, insert the contents of `section.tex` immediately
 after the `\end{table*}` belonging to `\label{tab:target_results}` and before

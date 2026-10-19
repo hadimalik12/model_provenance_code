@@ -15,15 +15,12 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-ENV_NAME="${ENV_NAME:-model_provenance_venv}"
-ENV_DIR="${ENV_DIR:-/tmp/python-venv/$ENV_NAME}"
+ENV_DIR="${ENV_DIR:-$REPO_ROOT/.venv_pace}"
 
 if [ -z "${HF_HOME:-}" ]; then
     export HF_HOME="$REPO_ROOT/.cache/huggingface"
 fi
 mkdir -p "$HF_HOME"
-
-mkdir -p /tmp/python-venv
 
 if [ -d "$ENV_DIR" ]; then
     echo "Conda env already exists at $ENV_DIR"
@@ -34,7 +31,6 @@ fi
 
 conda activate "$ENV_DIR"
 
-PY="$ENV_DIR/bin/python"
 PIP="$ENV_DIR/bin/pip"
 hash -r
 
@@ -58,5 +54,5 @@ Experiment entrypoints are under:
   $REPO_ROOT/experiments/
 
 For example:
-  sbatch $REPO_ROOT/experiments/table_02_target_provenance/jobs/run_augmented_targets_1b_1_4b.sbatch
+  bash $REPO_ROOT/experiments/public_pythia_derivatives/submit.sh
 EOF

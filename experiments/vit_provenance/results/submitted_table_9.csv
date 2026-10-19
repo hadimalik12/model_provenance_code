@@ -1,0 +1,13 @@
+transformation,signed_shard_advantage,threshold,decision,witness_detected
+Unmodified CIFAR-10 derivative,0.1138,0.0438,reject,yes
+Linear Soup (3 derivatives),0.1205,0.0438,reject,yes
+TIES,0.1226,0.0438,reject,yes
+DARE-TIES (90% drop),0.1273,0.0438,reject,yes
+SLERP,0.1153,0.0438,reject,yes
+8-bit quantization,0.1112,0.0438,reject,yes
+4-bit quantization,0.1039,0.0438,reject,yes
+3-bit quantization,0.1242,0.0438,reject,yes
+30% magnitude pruning,0.1210,0.0438,reject,yes
+50% magnitude pruning,0.1205,0.0438,reject,yes
+70% magnitude pruning,0.0909,0.0438,reject,yes
+90% magnitude pruning,0.0369,0.0438,fail_to_reject,no

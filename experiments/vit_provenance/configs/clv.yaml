@@ -1,0 +1,17 @@
+experiment:
+  id: vit_provenance
+  purpose: Public and transformed ViT ImageNet witness audit
+  variant: centered_logit_variance
+dataset:
+  source: evanarlian/imagenet_1k_resized_256
+  train_shards: [0, 1, 2, 3, 4]
+  validation_shards: [0, 1]
+  classes: 77
+  construction_images_per_class_per_shard: 25
+  evaluation_images_per_class_per_shard: 25
+scoring:
+  method: centered_logit_variance
+  fixed_views: 8
+  primary_score: clv_score
+outputs:
+  run_id: public_derivatives_seed0

@@ -1,0 +1,7 @@
+parent_model,target_model,signed_shard_advantage,threshold,decision,witness_detected
+EleutherAI/pythia-1b,Leogrin/eleuther-pythia1b-hh-sft,0.435,0.096,reject,yes
+EleutherAI/pythia-1.4b,LinguaCustodia/fin-pythia-1.4b,0.287,0.096,reject,yes
+EleutherAI/pythia-1.4b,herMaster/pythia1.4B-finetuned-on-lamini-docs,0.453,0.096,reject,yes
+EleutherAI/pythia-1.4b,kykim0/pythia-1.4b-tulu-v2-mix,0.140,0.096,reject,yes
+EleutherAI/pythia-1.4b,lomahony/pythia-1.4b-helpful-dpo,0.440,0.096,reject,yes
+EleutherAI/pythia-1.4b,lomahony/pythia-1.4b-helpful-sft,0.458,0.096,reject,yes

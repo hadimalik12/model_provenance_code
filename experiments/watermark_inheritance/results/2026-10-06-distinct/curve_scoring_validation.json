@@ -1,0 +1,238 @@
+{
+  "complete": false,
+  "matched_steps": [
+    512,
+    1024,
+    2048,
+    3125,
+    6250,
+    12500
+  ],
+  "expected_checkpoints": 42,
+  "verified_utc": "2026-10-06T13:57:08.338535+00:00",
+  "checkpoints": 36,
+  "pair_scores": 360000,
+  "final_pair_decisions_per_detector": 288000,
+  "aggregate_tests": 144,
+  "checks": [
+    "Single-pass exposure, checkpoint/model/config identity, and matched target/control prefixes",
+    "Source/split/length alignment",
+    "Frozen calibration membership and accuracy",
+    "Per-example z reconstruction and neutral scores",
+    "All strict-threshold final decisions",
+    "Counts, signed gaps, advantages and within-pair outcomes",
+    "Independent log-space paired and aggregate p-values; frozen subnormal rounding explicitly recorded",
+    "Equal 100k aggregate budgets with both probes and keys",
+    "Artifact and scorer hashes"
+  ],
+  "subnormal_log_p_recomputations": [
+    {
+      "run": "run_00",
+      "checkpoint": "target_step3125",
+      "test": "radioactivity",
+      "probe": "s",
+      "key": "correct",
+      "stored_log10_p": -318.8889596052506,
+      "recomputed_log10_p": -318.8889466044305,
+      "one_sided_stored_p": 1.29134e-319,
+      "one_sided_recomputed_p": 1.2914e-319,
+      "maximum_probability_roundoff": 5e-324,
+      "factor": 1
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "target_step3125",
+      "test": "radioactivity",
+      "probe": "s",
+      "key": "correct",
+      "stored_log10_p": -322.0274617421629,
+      "recomputed_log10_p": -322.0375683749611,
+      "one_sided_stored_p": 9.4e-323,
+      "one_sided_recomputed_p": 9.4e-323,
+      "maximum_probability_roundoff": 5e-324,
+      "factor": 1
+    }
+  ],
+  "records": [
+    {
+      "run": "run_00",
+      "checkpoint": "control_step1024",
+      "metrics_sha256": "cc1401a3569cbf3b01d36f78c0def5f8b081a13423c8e897877dc0d5a6c1a591"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "control_step12500",
+      "metrics_sha256": "cf1d53c8c128e4c175e58808170e7ec63503113432f798c09a5621b9b3c47479"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "control_step2048",
+      "metrics_sha256": "9d33ce0b665acb4321ebd26337ecffb3b6229e6b6349de0704fc2c1ebab53204"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "control_step3125",
+      "metrics_sha256": "c02561c2245a29fbf234c5e6ca793e21790f5ab25740b1ce02f77980fed7f09d"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "control_step512",
+      "metrics_sha256": "69262d55572ea15b5ae556222c6bd62e8f8fd5b2cac72b9188a16342ff25262f"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "control_step6250",
+      "metrics_sha256": "bd7813690deed3da8d4ecc4fbee9bc927a980da851be3578d49e6f723fa7a0b3"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "target_step1024",
+      "metrics_sha256": "b1894c7372397c126eb1db4ef231b2728c430938772c51c51e690ec92f8893c6"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "target_step12500",
+      "metrics_sha256": "80caf861f20b4b3e956ad465de970c1d4be33263b71ee801eeef1acadcbcbc9d"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "target_step2048",
+      "metrics_sha256": "13f3f840724fb417938005c5db85299d5722dfc08718899db8b0354e52a51a11"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "target_step3125",
+      "metrics_sha256": "f0be94f0092f01f4f860924041eb4c10dcd456d2690db371835dda346c3a5753"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "target_step512",
+      "metrics_sha256": "81565b8f5a04ccbf8c25082c54e67c62e4379b7f406a16f60ba4c3c655cb2a6b"
+    },
+    {
+      "run": "run_00",
+      "checkpoint": "target_step6250",
+      "metrics_sha256": "3bbb2d26e0ceb83871e152adeb808a6f42ec6bfb1a18dce6a186729892d4970d"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "control_step1024",
+      "metrics_sha256": "cc0f920712577d5b749f34ffd93ad2e786a816ad35dcfc7eeb472eed276dfbc9"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "control_step12500",
+      "metrics_sha256": "823858df0badee2fc6b076ecfe6c34ca415b074d4e542ad12c32bbb302fdb5df"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "control_step2048",
+      "metrics_sha256": "fd53859ae3a6a42ecf303ee0e593aa6d9557535ffc045eec7542940921790d27"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "control_step3125",
+      "metrics_sha256": "dc56a2e021bea4a9fe472b81d2676a320951e9e1a104b58129d93b9a1ace2488"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "control_step512",
+      "metrics_sha256": "0727b8575a08e282a8ed00016596a33792821d68bb7280922706b839f097fa65"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "control_step6250",
+      "metrics_sha256": "168d6858d3af9a88f79c5cf1a6c671b920e44b93de517274c7affffbe82f3afc"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "target_step1024",
+      "metrics_sha256": "d4c7c7f8ad444c67b61685ac0cb9986943f79b1c3d0d6258719f8756ec884c50"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "target_step12500",
+      "metrics_sha256": "6233067daf4bb0afa99946cd0ca2d843f7ddb1be590da016df12d0a77eeb9c70"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "target_step2048",
+      "metrics_sha256": "5c689be3bd68cfa14f788d6c91334b9a1fa059f02e34ff3687372c0e131cfbe6"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "target_step3125",
+      "metrics_sha256": "ca3138441ea6fd1c89d09762750f793af1374c3d73473ae055a06fd42cd15eff"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "target_step512",
+      "metrics_sha256": "aaa97340b696a4411576784a169acd5305203ccc7ad76507f545572b1cb1aaec"
+    },
+    {
+      "run": "run_01",
+      "checkpoint": "target_step6250",
+      "metrics_sha256": "43cbcb6c8bf274134b5fc3978d94f71d9ab71eb8ec5b33a58f14b96cefd444e0"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "control_step1024",
+      "metrics_sha256": "0985d66b8314617f44d50f39e5e0ff25eb6ef70da20e7fac78ea0bc04e609397"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "control_step12500",
+      "metrics_sha256": "26a12de1141aa5b43692528830893f356a42f92b862d689102a5004f19f2b6a9"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "control_step2048",
+      "metrics_sha256": "4d5c6bb2c0627ef285453d1ff0d2bcbbf99a89b1de1c54c3acf0fae60937bfe8"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "control_step3125",
+      "metrics_sha256": "29edd1180c98f278d3ccc5b7997d77dd44686b3f65df72e9ba9678a36a4442c9"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "control_step512",
+      "metrics_sha256": "4c132396188b9593db7c9066f31f45c64ae58bc39b6e7750be6709137b7b9c2e"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "control_step6250",
+      "metrics_sha256": "e7b7ed75c4ea7a7090117be9c1461891b513adf82286d9089e1bb21b34423532"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "target_step1024",
+      "metrics_sha256": "ec71c15a9e3ed11ceac263635df407214f05443999feda12bcf7d4cef4263b9d"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "target_step12500",
+      "metrics_sha256": "07f9cd0b29032a19d333e0f7e9f6e33d3f937ebc4ad1d66a43ad766684a08a57"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "target_step2048",
+      "metrics_sha256": "5252b6605cbbe02e12d741611bed54815091a23dc94d0b2e43c22da68b32d091"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "target_step3125",
+      "metrics_sha256": "97d764abc9dce7d8a42c027365a57c6f4bd95fadae13ebfe198a3e619a7357f5"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "target_step512",
+      "metrics_sha256": "cae4ae0d3e9c12a6281237fd44f71fb29d50a4a4233bcbde1569017e18d243af"
+    },
+    {
+      "run": "run_02",
+      "checkpoint": "target_step6250",
+      "metrics_sha256": "3f792adda9d12b816c415af2a0a4f8ecb75436ba2d3bed6d0c6238090377d826"
+    }
+  ]
+}

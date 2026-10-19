@@ -12,6 +12,6 @@ README to the commands it uses.
 | `cluster/` | Provision the PACE environment |
 | `setup/` | Validate Python environment and experiment YAML |
 
-The experiment-specific ImageNet scorers are intentionally under
-`experiments/table_01_imagenet/scoring/`, because their parent-head and image
-augmentation assumptions are not shared by language-model experiments.
+The experiment-specific centered-logit-variance scorer is intentionally under
+`experiments/vit_provenance/scoring/`, because its fixed image-view protocol is
+not shared by the language-model experiments.

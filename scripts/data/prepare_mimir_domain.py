@@ -21,7 +21,7 @@ Usage:
     python scripts/data/prepare_mimir_domain.py --inspect --config github
     python scripts/data/prepare_mimir_domain.py \\
         --num-train-per-class 20 --num-test-per-class 20 \\
-        --output-dir data/processed/mimir_github_phase2_tiny
+        --output-dir artifacts/example/prepared/mimir_github
 """
 
 import argparse
@@ -122,7 +122,7 @@ def parse_args():
     p.add_argument("--max-words", type=int, default=32)
     p.add_argument("--min-words", type=int, default=8)
     p.add_argument("--seed", type=int, default=0)
-    p.add_argument("--output-dir", default="data/processed/mimir_github")
+    p.add_argument("--output-dir", default="artifacts/manual/mimir_github")
     p.add_argument("--token", default=os.environ.get("HF_TOKEN"),
                    help="HuggingFace API token (default: $HF_TOKEN)")
     p.add_argument("--list-configs", action="store_true",

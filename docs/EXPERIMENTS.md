@@ -1,32 +1,41 @@
-# Experiment Map
+# Submitted experiment map
 
-The repository is organized by research question. An experiment folder is the
-single place to find its motivation, configuration, Slurm jobs, and report
-compiler. Shared implementation belongs in `src/shard_audit/` and reusable CLI
-commands remain under `scripts/`.
+The submitted paper has three main result tables and six appendix tables. The
+repository uses purpose-based directory names so appendix numbering changes do
+not rename code again.
 
-| Paper table | Research question | Canonical folder | Slurm entrypoint | Result type |
-|---|---|---|---|---|
-| 1 | ImageNet ViT shard provenance | `experiments/table_01_imagenet/` | `jobs/run_augmentation_stability.sbatch` | Augmented paper-style replication |
-| 2 | Fine-tuned Pythia target provenance | `experiments/table_02_target_provenance/` | `jobs/targets_*_aug.sbatch` | Augmented variant; vanilla compiler retained |
-| 3 | Parent Pythia shard-signal sanity check | `experiments/table_03_parent_signal/` | `jobs/parents_*_aug.sbatch` | Augmented variant with nonmember control |
-| 4 | WikiMIA score selection | `experiments/table_04_wikimia_score_selection/` | None yet | Per-model runs and compilers |
-| 5 | MIMIR multi-domain signal | `experiments/table_05_multidomain/` | `jobs/run_conservative_policy.sbatch` | Conservative-policy variant |
+| Paper location | Experiment | Repository package | Reproduction status |
+|---|---|---|---|
+| Table 1 | Watermark LLM provenance at final Dolly/UltraChat checkpoints | `experiments/watermark_inheritance/` | Complete code and results |
+| Appendix Table 4 | Full Dolly watermark trajectory | `experiments/watermark_inheritance/` | Complete code and results |
+| Appendix Table 5 | Full UltraChat watermark trajectory | `experiments/watermark_inheritance/` | Complete code and results |
+| Table 2, public derivatives | Fourteen public Pythia targets | `experiments/public_pythia_derivatives/` | Complete code; submitted values bundled |
+| Appendix Table 6 | Model-level public Pythia results | `experiments/public_pythia_derivatives/` | Complete code; submitted values bundled |
+| Table 2, INT8 | Six quantized Pythia targets | `experiments/pythia_int8_quantization/` | Complete code; submitted values bundled |
+| Appendix Table 7 | Model-level Pythia INT8 results | `experiments/pythia_int8_quantization/` | Complete code; submitted values bundled |
+| Table 3, public ViTs | Six public derivatives plus controls | `experiments/vit_provenance/` | Complete CLV audit code; submitted values bundled |
+| Appendix Table 8 | Model-level public ViT results | `experiments/vit_provenance/` | Complete CLV audit code; submitted values bundled |
+| Table 3, transformations | ViT merging, quantization, and pruning | `experiments/vit_provenance/` | Submitted values bundled |
+| Appendix Table 9 | Model-level ViT transformation results | `experiments/vit_provenance/` | Original checkpoint-construction source unavailable |
 
-## Important Naming Correction
+The Appendix Table 9 PDF specifies the transformations and results but not the
+three exact merge inputs or all merge hyperparameters. No transformation source
+was present in this repository or the teammate repository used to recover the
+watermark experiment. The repository therefore publishes the submitted result
+table and exact downstream CLV audit, but does not claim an invented
+transformation pipeline is an exact reproduction.
 
-Older files named the MIMIR GitHub parent-signal work as "Table 4." That was
-a historical filename, not a correct paper mapping. It is now Table 3 under
-`experiments/table_03_parent_signal/`. Paper Table 4 is the WikiMIA experiment.
+## Removed development studies
 
-## Running Pattern
+The publication cleanup removed four independent studies after checking the
+submitted PDF and code dependencies:
 
-1. Read the experiment README.
-2. Validate the selected YAML configuration.
-3. Submit the job from that same experiment folder.
-4. Find generated data, scores, result JSON, and the compiled table in the
-   configured artifact directory. Historical reports still read legacy paths.
+- parent-only Pythia signal experiments (the retained Pythia runner already
+  performs the required parent sanity checks);
+- WikiMIA score selection (WikiMIA is absent from the submitted paper);
+- multi-domain MIMIR augmentation (the paper uses only MIMIR GitHub); and
+- InstructCoder controlled provenance (unrelated to Appendix Table 8, which is
+  the public-ViT CLV experiment).
 
-The core audit is always the same: prepare a labeled member/control split,
-score a model, calibrate a threshold on training/calibration data, and report
-held-out shard advantage plus a null control where applicable.
+Historical generated logs and superseded table-numbered wrappers were also
+removed. Git history remains the source for that development material.

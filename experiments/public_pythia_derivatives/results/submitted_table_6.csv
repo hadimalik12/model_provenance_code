@@ -1,0 +1,15 @@
+parent_model,target_model,signed_shard_advantage,threshold,decision,witness_detected
+EleutherAI/pythia-1b,Leogrin/eleuther-pythia1b-hh-sft,0.390,0.096,reject,yes
+EleutherAI/pythia-1.4b,herMaster/pythia1.4B-finetuned-on-lamini-docs,0.345,0.096,reject,yes
+EleutherAI/pythia-1.4b,kykim0/pythia-1.4b-tulu-v2-mix,0.115,0.096,reject,yes
+EleutherAI/pythia-1.4b,LinguaCustodia/fin-pythia-1.4b,0.150,0.096,reject,yes
+EleutherAI/pythia-1.4b,lomahony/pythia-1.4b-helpful-dpo,0.325,0.096,reject,yes
+EleutherAI/pythia-1.4b,lomahony/pythia-1.4b-helpful-sft,0.320,0.096,reject,yes
+EleutherAI/pythia-1.4b,nnheui/pythia-1.4b-sft-full,0.375,0.096,reject,yes
+EleutherAI/pythia-6.9b,allenai/open-instruct-pythia-6.9b-tulu,0.400,0.096,reject,yes
+EleutherAI/pythia-6.9b,lomahony/eleuther-pythia6.9b-hh-dpo,0.355,0.096,reject,yes
+EleutherAI/pythia-6.9b,lomahony/eleuther-pythia6.9b-hh-sft,0.380,0.096,reject,yes
+EleutherAI/pythia-6.9b,pkarypis/pythia-ultrachat,0.395,0.096,reject,yes
+EleutherAI/pythia-6.9b,usvsnsp/pythia-6.9b-ppo,0.380,0.096,reject,yes
+EleutherAI/pythia-12b,lomahony/eleuther-pythia12b-hh-dpo,0.400,0.096,reject,yes
+EleutherAI/pythia-12b,lomahony/eleuther-pythia12b-hh-sft,0.410,0.096,reject,yes

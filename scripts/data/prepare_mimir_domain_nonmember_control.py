@@ -18,7 +18,7 @@ Usage:
         --num-train-per-class 170 \\
         --num-test-per-class 200 \\
         --seed 0 \\
-        --output-dir data/processed/mimir_github_nonmember_control_seed0
+        --output-dir artifacts/example/prepared/mimir_github_nonmember_control
 """
 
 import argparse
@@ -179,8 +179,10 @@ def parse_args():
     p.add_argument("--max-words", type=int, default=32)
     p.add_argument("--min-words", type=int, default=8)
     p.add_argument("--seed", type=int, default=0)
-    p.add_argument("--output-dir",
-                   default="data/processed/mimir_github_nonmember_control_seed0")
+    p.add_argument(
+        "--output-dir",
+        default="artifacts/manual/mimir_github_nonmember_control",
+    )
     p.add_argument("--token", default=os.environ.get("HF_TOKEN"))
     return p.parse_args()
 

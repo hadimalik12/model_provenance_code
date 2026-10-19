@@ -1,0 +1,17 @@
+experiment:
+  id: public_pythia_derivatives
+  purpose: Audit the 14 submitted public Pythia derivatives
+  variant: min_k_20
+dataset:
+  source: iamgroot42/mimir
+  config: github
+  split: ngram_13_0.2
+  construction_members: 560
+  construction_controls: 340
+  evaluation_per_shard: 400
+scoring:
+  method: min_k_log_probability
+  percentage: 20
+  primary_score: min_k_20_logprob
+outputs:
+  run_id: paper_audit

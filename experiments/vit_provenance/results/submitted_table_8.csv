@@ -1,0 +1,9 @@
+target_model,signed_shard_advantage,threshold,decision,witness_detected
+google/vit-base-patch16-224,0.0810,0.0438,reject,positive_reference
+ISxOdin/vit-base-oxford-iiit-pets,0.1288,0.0438,reject,yes
+MatanBT/vit-base-patch16-224-cifar10,0.1138,0.0438,reject,yes
+MatanBT/vit-base-patch16-224-cifar100,0.1268,0.0438,reject,yes
+Abhiram4/vit-base-patch16-224-finetuned-eurosat,0.1065,0.0438,reject,yes
+MatanBT/vit-base-patch16-224-celeba-smiling,0.1029,0.0438,reject,yes
+rvv-karma/Human-Action-Recognition-VIT-Base-patch16-224,0.1132,0.0438,reject,yes
+ViT-B/16-224 random initialization,0.0062,0.0438,fail_to_reject,no

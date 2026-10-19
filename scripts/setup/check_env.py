@@ -1,4 +1,4 @@
-"""Environment checker for model_provenance Phase 1.
+"""Environment checker for the published model-provenance experiments.
 
 Prints a concise report of installed packages, hardware, and required
 directory existence.  Exits with code 1 if any essential package is missing.
@@ -11,12 +11,10 @@ import zlib
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 REQUIRED_DIRS = [
-    "data/raw",
-    "data/processed",
-    "data/scores",
-    "outputs/runs",
-    "outputs/reports",
-    "outputs/figures",
+    "artifacts",
+    ".cache",
+    "experiments",
+    "src/shard_audit",
 ]
 
 
@@ -48,8 +46,15 @@ def main() -> int:
         ("torch",          True,  "torch"),
         ("transformers",   True,  "transformers"),
         ("datasets",       True,  "datasets"),
+        ("torchvision",    True,  "torchvision"),
+        ("bitsandbytes",   True,  "bitsandbytes"),
+        ("huggingface_hub", True, "huggingface-hub"),
+        ("pyarrow",        True,  "pyarrow"),
+        ("PIL",            True,  "pillow"),
         ("sklearn",        True,  "scikit-learn"),
         ("numpy",          True,  "numpy"),
+        ("scipy",          True,  "scipy"),
+        ("numba",          True,  "numba"),
         ("matplotlib",     False, "matplotlib"),
         ("pandas",         False, "pandas"),
         ("tqdm",           False, "tqdm"),
@@ -120,7 +125,7 @@ def main() -> int:
         print("[WARN] Some required directories are missing.")
         print("       Run: bash scripts/setup/setup_local_env.sh")
     else:
-        print("[OK]   Environment looks good for Phase 1 scaffold.")
+        print("[OK]   Environment looks good for the published experiments.")
     print("=" * 60)
     return 0
 

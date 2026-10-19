@@ -1,32 +1,29 @@
 # Causal Model Provenance
 
-This repository audits whether a model retains evidence of a candidate
-pretraining shard. The paper calls this a causal model provenance audit: create
-member and control shards, score a parent or target model, calibrate a
-threshold on one split, and measure held-out shard advantage on another.
+This repository contains the experiment code and compact published results for
+the submitted AISTATS 2027 paper *Causal Model Provenance via Shard Membership
+Auditing*. The audit asks whether a target retains a witness carried by a
+candidate parent's training shard.
 
-## Start Here
+## Submitted experiments
 
-Choose the research question, then open its experiment folder. Each folder
-contains its own README, configuration, Slurm jobs, and table compiler.
+Directory names describe the scientific experiment rather than a table number:
 
-| Question | Experiment folder | Paper table |
+| Experiment | Paper coverage | Entry point |
 |---|---|---|
-| Do downstream ViTs retain ImageNet shard membership? | `experiments/table_01_imagenet/` | 1 |
-| Do fine-tuned Pythia targets retain GitHub membership? | `experiments/table_02_target_provenance/` | 2 |
-| Do base Pythia models show the expected parent signal? | `experiments/table_03_parent_signal/` | 3 |
-| Which membership score works on WikiMIA? | `experiments/table_04_wikimia_score_selection/` | 4 |
-| Does the signal persist across MIMIR domains? | `experiments/table_05_multidomain/` | 5 |
+| [`watermark_inheritance/`](experiments/watermark_inheritance/) | Table 1; Appendix Tables 4–5 | `submit.sh`, `submit_ultrachat.sh` |
+| [`public_pythia_derivatives/`](experiments/public_pythia_derivatives/) | Table 2 public derivatives; Appendix Table 6 | `submit.sh` |
+| [`pythia_int8_quantization/`](experiments/pythia_int8_quantization/) | Table 2 INT8 summary; Appendix Table 7 | `jobs/run_paper_targets.sbatch` |
+| [`vit_provenance/`](experiments/vit_provenance/) | Table 3; Appendix Tables 8–9 | `jobs/run_public_derivatives.sbatch` |
 
-Read [the experiment map](docs/EXPERIMENTS.md) for the precise paper-to-code
-mapping and [the architecture guide](docs/architecture/repository-map.md) for
-the repository layout.
+[The experiment map](docs/EXPERIMENTS.md) records the exact main/appendix
+mapping and the availability of each reproduction pipeline.
 
 The [controlled watermark-inheritance manuscript fragment](docs/manuscript/watermark_inheritance/README.md)
 provides the proposed Section 5.3.1 with verified run-by-run Dolly and UltraChat
 tables and instructions for insertion into the manuscript source.
 
-## Running On PACE
+## Setup on PACE
 
 ```bash
 bash scripts/cluster/install_pace.sh
@@ -34,38 +31,46 @@ export HF_TOKEN=<your_huggingface_token>
 python scripts/setup/check_env.py
 ```
 
-Then validate an experiment configuration and submit its focused job:
+Each experiment README gives its full command. Scheduler account and partition
+choices are supplied through documented environment variables or normal
+`sbatch` command-line overrides; no personal account is committed.
 
-```bash
-python scripts/setup/validate_experiment_config.py \
-  experiments/table_02_target_provenance/configs/augmented.yaml
-sbatch experiments/table_02_target_provenance/jobs/run_augmented_targets_1b_1_4b.sbatch
-```
-
-## Repository Layout
+## Repository layout
 
 ```text
-experiments/        Human-facing research packages: Table 1-5 and exploration
-scripts/data/       Reusable dataset preparation commands
-scripts/scoring/    Reusable language-model scoring commands
-scripts/audit/      Reusable threshold-audit commands
-scripts/cluster/    HPC environment bootstrap
-scripts/setup/      Local setup and configuration validation
-src/shard_audit/    Shared audit, scoring, dataset, and reporting logic
-artifacts/          New generated runs (ignored by Git)
-.cache/             Downloaded model and dataset cache (ignored by Git)
+experiments/        Submitted-paper experiments and compact result tables
+scripts/data/       Reusable MIMIR data preparation
+scripts/scoring/    Reusable language-model scoring
+scripts/audit/      Threshold calibration and held-out evaluation
+scripts/cluster/    PACE environment bootstrap
+scripts/setup/      Environment and configuration checks
+src/shard_audit/    Shared audit, data, scoring, and experiment metadata
+artifacts/          Generated runs and checkpoints (ignored by Git)
+.cache/             Downloaded models and datasets (ignored by Git)
 ```
 
-All generated run state belongs in `artifacts/<experiment-id>/<run-id>/`; see
-[artifact conventions](docs/architecture/artifacts.md).
+Generated datasets, checkpoints, and raw scores belong under `artifacts/`.
+Only compact result tables and validation manifests needed to audit paper claims
+are versioned.
 
-## Core Terms
+## Verification
 
-- **Member:** an example drawn from a candidate training shard.
-- **Control / nonmember:** an example outside that shard; a null control may use
-  two nonmember groups.
-- **Score:** evidence that an example is member-like, such as MIN-K log-prob.
-- **Shard advantage:** held-out TPR minus FPR after threshold calibration.
-- **Paper replication:** follows a paper table's intended setup.
-- **Augmented variant:** modifies scoring or data augmentation and must not be
-  interpreted as an exact paper result.
+```bash
+.venv_pace/bin/python -m pytest -q
+find experiments scripts -type f \( -name '*.sh' -o -name '*.sbatch' \) \
+  -exec bash -n {} +
+```
+
+The watermark package additionally contains tiny-model compatibility, resume,
+scoring, and exact published-result tests under
+`experiments/watermark_inheritance/tests/`.
+
+## Core terms
+
+- **Secret shard:** examples that carry the candidate witness.
+- **Control shard:** matched examples that do not carry that witness.
+- **Construction split:** data used to select and freeze the distinguisher.
+- **Evaluation split:** held-out data used only for the final test.
+- **Shard advantage:** held-out true-positive rate minus false-positive rate.
+- **Witness detected:** the signed held-out advantage exceeds the paper's fixed
+  level-0.05 threshold.
