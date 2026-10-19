@@ -28,11 +28,12 @@ def make_random_init_model(
     seed: int = 0,
     device: str = "cuda",
     dtype: Optional[torch.dtype] = None,
+    revision: str | None = None,
 ):
     """Build a deterministic random-initialization sanity-check model."""
     from transformers import AutoConfig, AutoModelForImageClassification
 
-    config = AutoConfig.from_pretrained(reference_model_id)
+    config = AutoConfig.from_pretrained(reference_model_id, revision=revision)
     torch.manual_seed(seed)
     model = AutoModelForImageClassification.from_config(config)
     if dtype is not None:

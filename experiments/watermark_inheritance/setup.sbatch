@@ -27,7 +27,7 @@ mkdir -p "$WM_ARTIFACT_ROOT/setup/logs" "$WM_SHARED_DIR" \
 "$PYTHON_BIN" -m experiments.watermark_inheritance.configure \
   --root "$WM_ARTIFACT_ROOT" --shared-dir "$WM_SHARED_DIR"
 UPSTREAM="$WM_SHARED_DIR/radioactive-watermark"
-UPSTREAM_COMMIT=19c6dc90e7a0dddb1a241b73e7fae708b68f024e
+UPSTREAM_COMMIT=$("$PYTHON_BIN" -c 'from src.shard_audit.reproducibility import external_code_spec; print(external_code_spec("radioactive_watermark")["revision"])')
 if [ ! -d "$UPSTREAM/.git" ]; then
   git clone https://github.com/facebookresearch/radioactive-watermark.git "$UPSTREAM"
 fi

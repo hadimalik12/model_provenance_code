@@ -30,6 +30,7 @@ from src.shard_audit.scoring.vit_scores import (
     centered_logit_variance,
     make_random_init_model,
 )
+from src.shard_audit.reproducibility import lock_sha256, model_revision
 
 
 LOGGER = logging.getLogger(__name__)
@@ -123,6 +124,10 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--target-model", required=True)
+    parser.add_argument(
+        "--target-revision",
+        help="Immutable Hugging Face model commit; defaults to the input lock",
+    )
     parser.add_argument("--random-init", action="store_true")
     parser.add_argument("--random-seed", type=int, default=0)
     parser.add_argument("--train-file", type=Path, required=True)
@@ -161,6 +166,12 @@ def main() -> None:
         raise ValueError("--batch-size must be positive")
     device = select_device(args.device)
     dtype = select_dtype(args.dtype, device)
+    local_target = Path(args.target_model).exists()
+    if local_target and args.target_revision:
+        raise ValueError("--target-revision cannot be used with a local checkpoint")
+    revision = None if local_target else (
+        args.target_revision or model_revision(args.target_model)
+    )
 
     if args.random_init:
         target_model = make_random_init_model(
@@ -168,16 +179,24 @@ def main() -> None:
             seed=args.random_seed,
             device=device,
             dtype=dtype,
+            revision=revision,
         )
         target_label = f"{args.target_model}::random_init_seed{args.random_seed}"
     else:
+        model_kwargs = {"torch_dtype": dtype}
+        if revision:
+            model_kwargs["revision"] = revision
         target_model = AutoModelForImageClassification.from_pretrained(
-            args.target_model,
-            torch_dtype=dtype,
+            args.target_model, **model_kwargs
         ).to(device).eval()
         target_label = args.target_model
 
-    processor = AutoImageProcessor.from_pretrained(args.target_model, use_fast=True)
+    processor_kwargs = {"use_fast": True}
+    if revision:
+        processor_kwargs["revision"] = revision
+    processor = AutoImageProcessor.from_pretrained(
+        args.target_model, **processor_kwargs
+    )
     image_size = int(
         processor.size.get("height")
         or processor.size.get("shortest_edge")
@@ -228,7 +247,9 @@ def main() -> None:
     score_split(test_records, "test")
     manifest = {
         "target_model": args.target_model,
+        "target_revision": revision,
         "target_label": target_label,
+        "input_lock_sha256": lock_sha256(),
         "random_init": args.random_init,
         "score": "negative_mean_population_variance_of_view_centered_log_probabilities",
         "score_key": "clv_score",

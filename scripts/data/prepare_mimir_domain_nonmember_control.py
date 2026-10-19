@@ -38,6 +38,7 @@ if REPO_ROOT not in sys.path:
 
 from src.shard_audit.data.datasets import (
     DATASET_ID,
+    DATASET_REVISION,
     load_mimir_github_nonmembers,
     _nonmember_filename,
 )
@@ -171,6 +172,11 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--dataset-id", default=DATASET_ID)
+    p.add_argument(
+        "--dataset-revision",
+        default=DATASET_REVISION,
+        help="Immutable Hugging Face dataset commit",
+    )
     p.add_argument("--config", default="github")
     p.add_argument("--ngram-split", default="ngram_13_0.2",
                    dest="ngram_split")
@@ -192,6 +198,7 @@ def main():
 
     logger.info("=== MIMIR GitHub Nonmember-vs-Nonmember Control Data Preparation ===")
     logger.info("Dataset:       %s", args.dataset_id)
+    logger.info("Revision:      %s", args.dataset_revision)
     logger.info("Config:        %s", args.config)
     logger.info("N-gram split:  %s", args.ngram_split)
     logger.info("Requested:     %d train + %d test per pseudo-class",
@@ -214,6 +221,7 @@ def main():
         config=args.config,
         split=args.ngram_split,
         token=args.token,
+        revision=args.dataset_revision,
     )
     n_raw = len(nonmember_texts_raw)
     logger.info("Raw nonmember texts: %d", n_raw)
@@ -325,6 +333,7 @@ def main():
     manifest = {
         "experiment_type": "nonmember_vs_nonmember_control",
         "dataset_id": args.dataset_id,
+        "dataset_revision": args.dataset_revision,
         "config": args.config,
         "ngram_split": args.ngram_split,
         "source_file": _nonmember_filename(args.config, args.ngram_split),

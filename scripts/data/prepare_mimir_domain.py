@@ -38,6 +38,7 @@ if REPO_ROOT not in sys.path:
 
 from src.shard_audit.data.datasets import (
     DATASET_ID,
+    DATASET_REVISION,
     KNOWN_CONFIGS,
     KNOWN_SPLITS,
     list_configs,
@@ -109,6 +110,11 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--dataset-id", default=DATASET_ID)
+    p.add_argument(
+        "--dataset-revision",
+        default=DATASET_REVISION,
+        help="Immutable Hugging Face dataset commit",
+    )
     p.add_argument("--config", default="github",
                    help="Dataset config/subset (e.g. 'github')")
     p.add_argument("--split", default="ngram_13_0.2",
@@ -190,6 +196,7 @@ def main():
 
     logger.info("=== MIMIR GitHub Dataset Preparation ===")
     logger.info("Dataset:       %s", args.dataset_id)
+    logger.info("Revision:      %s", args.dataset_revision)
     logger.info("Config:        %s", args.config)
     logger.info("Split:         %s", args.split)
     logger.info("Train/class:   %d", args.num_train_per_class)
@@ -210,6 +217,7 @@ def main():
         config=args.config,
         split=args.split,
         token=args.token,
+        revision=args.dataset_revision,
     )
     logger.info(
         "Raw loaded: %d members, %d nonmembers",
@@ -369,6 +377,7 @@ def main():
 
     manifest = {
         "dataset_id": args.dataset_id,
+        "dataset_revision": args.dataset_revision,
         "config": args.config,
         "split": args.split,
         "member_source_file": _member_filename(args.config, args.split),

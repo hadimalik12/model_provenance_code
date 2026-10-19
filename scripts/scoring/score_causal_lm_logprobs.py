@@ -144,6 +144,18 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     p.add_argument("--model", required=True)
+    p.add_argument(
+        "--model-revision",
+        help="Immutable Hugging Face model commit; required by paper runners",
+    )
+    p.add_argument(
+        "--tokenizer-model",
+        help="Optional tokenizer repository; defaults to --model",
+    )
+    p.add_argument(
+        "--tokenizer-revision",
+        help="Immutable tokenizer commit; defaults to --model-revision",
+    )
     p.add_argument("--train-file", required=True)
     p.add_argument("--test-file", required=True)
     p.add_argument("--output-dir", required=True)
@@ -174,6 +186,7 @@ def main():
 
     logger.info("=== Log-Probability Score Extraction ===")
     logger.info("Model:       %s", args.model)
+    logger.info("Revision:    %s", args.model_revision or "unlocked")
     logger.info("Train file:  %s", args.train_file)
     logger.info("Test file:   %s", args.test_file)
     logger.info("Output dir:  %s", args.output_dir)
@@ -198,7 +211,13 @@ def main():
     device = get_device(args.device)
     logger.info("Device: %s", device)
     model, tokenizer = load_model_and_tokenizer(
-        args.model, device, args.dtype, quantization=args.quantization
+        args.model,
+        device,
+        args.dtype,
+        quantization=args.quantization,
+        model_revision=args.model_revision,
+        tokenizer_name=args.tokenizer_model,
+        tokenizer_revision=args.tokenizer_revision,
     )
 
     import torch
@@ -269,6 +288,9 @@ def main():
 
     manifest = {
         "model": args.model,
+        "model_revision": args.model_revision,
+        "tokenizer_model": args.tokenizer_model or args.model,
+        "tokenizer_revision": args.tokenizer_revision or args.model_revision,
         "train_file": os.path.abspath(args.train_file),
         "test_file": os.path.abspath(args.test_file),
         "device": str(device),

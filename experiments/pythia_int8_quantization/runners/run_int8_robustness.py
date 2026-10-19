@@ -9,6 +9,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from src.shard_audit.reproducibility import lock_sha256, model_revision
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PYTHON = sys.executable
@@ -97,10 +99,13 @@ def main() -> None:
         json.dumps(
             {
                 "parent_model": args.parent_model,
+                "parent_revision": model_revision(args.parent_model),
                 "target_model": args.target_model,
+                "target_revision": model_revision(args.target_model),
                 "seed": args.seed,
                 "primary_score": "min_k_20_logprob",
                 "target_int8_residual_dtype": "float32",
+                "input_lock_sha256": lock_sha256(),
             },
             indent=2,
         )
@@ -158,6 +163,7 @@ def main() -> None:
                 PYTHON,
                 "scripts/scoring/score_causal_lm_logprobs.py",
                 "--model", representation.model,
+                "--model-revision", model_revision(representation.model),
                 "--train-file", str(main_data / "train.jsonl"),
                 "--test-file", str(main_data / "test.jsonl"),
                 "--output-dir", str(score_dir),
@@ -200,6 +206,7 @@ def main() -> None:
                     PYTHON,
                     "scripts/scoring/score_causal_lm_logprobs.py",
                     "--model", representation.model,
+                    "--model-revision", model_revision(representation.model),
                     "--train-file", str(control_data / "train.jsonl"),
                     "--test-file", str(control_data / "test.jsonl"),
                     "--output-dir", str(control_scores),

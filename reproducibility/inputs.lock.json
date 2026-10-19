@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "datasets": {
+    "mimir": {
+      "repo_id": "iamgroot42/mimir",
+      "repo_type": "dataset",
+      "revision": "02500d3b7cece0cb7628e939ba9fc93fdb6362ae"
+    },
+    "imagenet_resized_256": {
+      "repo_id": "evanarlian/imagenet_1k_resized_256",
+      "repo_type": "dataset",
+      "revision": "8de107e08d1f61884d5a4ec2dea8740667264a60"
+    },
+    "wikitext": {
+      "repo_id": "Salesforce/wikitext",
+      "repo_type": "dataset",
+      "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "config": "wikitext-103-raw-v1",
+      "split": "train"
+    },
+    "dolly": {
+      "repo_id": "databricks/databricks-dolly-15k",
+      "repo_type": "dataset",
+      "revision": "bdd27f4d94b9c1f951818a7da7fd7aeea5dbff1a",
+      "config": null,
+      "split": "train"
+    },
+    "ultrachat": {
+      "repo_id": "openbmb/UltraChat",
+      "repo_type": "dataset",
+      "revision": "f220fe796ce3ed62fbe1681b45ce6cbc9c6cabe0",
+      "split": "train"
+    }
+  },
+  "models": {
+    "EleutherAI/pythia-1b": "f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2",
+    "Leogrin/eleuther-pythia1b-hh-sft": "b29293529d7fb430257df6ae8079afeba2f42f9b",
+    "EleutherAI/pythia-1.4b": "fedc38a16eea3bd36a96b906d78d11d2ce18ed79",
+    "herMaster/pythia1.4B-finetuned-on-lamini-docs": "a6c699d6832bd3852c13d9c728c8599666b04c22",
+    "kykim0/pythia-1.4b-tulu-v2-mix": "4d21350c5197fcfc6cac0b2db277c3e9a158b303",
+    "LinguaCustodia/fin-pythia-1.4b": "818675a1325994d01daaec677b9ac40dddcc916d",
+    "lomahony/pythia-1.4b-helpful-dpo": "599b0f9ff8bdbccb4ccc8bf8a6a3cb7770c1b800",
+    "lomahony/pythia-1.4b-helpful-sft": "da0e31a28430fe2b03b009ebbfdbee74010931c2",
+    "nnheui/pythia-1.4b-sft-full": null,
+    "EleutherAI/pythia-6.9b": "c0e3eee36dc47af0c49f361c74cfe459c09f7f23",
+    "allenai/open-instruct-pythia-6.9b-tulu": "958b73d2d0e92189bae7ef3bd4036f9b5b508bea",
+    "lomahony/eleuther-pythia6.9b-hh-dpo": "f9eae2bc28c84768c79428f1affcff32e48cf688",
+    "lomahony/eleuther-pythia6.9b-hh-sft": "8ca04ae6e59da4f9bd86ad8f3d760b99ac862b01",
+    "pkarypis/pythia-ultrachat": "0561fb5d49b92fe0a3677f3f701503d55e8ed1af",
+    "usvsnsp/pythia-6.9b-ppo": "9ee543790de178dbc99d5ef83ee51b0b4cd32441",
+    "EleutherAI/pythia-12b": "bb1e3e710cdf6b524461d543cfb5ba773f0a81b6",
+    "lomahony/eleuther-pythia12b-hh-dpo": "6fc4cb69334241bbe93631f268c6f42bc05999d1",
+    "lomahony/eleuther-pythia12b-hh-sft": "e12cdad97eb968c59d5d63de3e0057fac82ded88",
+    "google/vit-base-patch16-224": "3f49326eb077187dfe1c2a2bb15fbd74e6ab91e3",
+    "ISxOdin/vit-base-oxford-iiit-pets": "6fcb4ce433d4b43a19bd9b4d2d906b2646858d45",
+    "MatanBT/vit-base-patch16-224-cifar10": "7e0c5d0d3d7c449c3f25f1351abd50733c0a8cb9",
+    "MatanBT/vit-base-patch16-224-cifar100": "853d63daa844810c636fd3a1216619e7a3042dbe",
+    "Abhiram4/vit-base-patch16-224-finetuned-eurosat": "da2af5ab8f4c91b47c34dc30f03a8b5ba704352f",
+    "MatanBT/vit-base-patch16-224-celeba-smiling": "688ae3b5225e4def61cc9500994e107141cefdb2",
+    "rvv-karma/Human-Action-Recognition-VIT-Base-patch16-224": "c16647aa649284692d1deacc52146cd631cba80a"
+  },
+  "external_code": {
+    "radioactive_watermark": {
+      "url": "https://github.com/facebookresearch/radioactive-watermark.git",
+      "revision": "19c6dc90e7a0dddb1a241b73e7fae708b68f024e"
+    }
+  },
+  "known_unavailable_inputs": {
+    "nnheui/pythia-1.4b-sft-full": {
+      "reason": "The original Hugging Face repository no longer serves model files.",
+      "evidence": "The submitted results name this target, but no original Transformers checkpoint is present in either project repository or the local caches.",
+      "possible_archive": "Felladrin/gguf-pythia-1.4b-sft-full@62a0d376786a6be6816018e7e2732520698045a2"
+    }
+  }
+}

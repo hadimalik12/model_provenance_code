@@ -63,6 +63,8 @@ from huggingface_hub import hf_hub_download
 import pyarrow.parquet as pq
 from PIL import Image
 
+from src.shard_audit.reproducibility import dataset_spec, lock_sha256
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -72,14 +74,17 @@ logger = logging.getLogger(__name__)
 
 
 DATASET_REPO = "evanarlian/imagenet_1k_resized_256"
+DATASET_REVISION = dataset_spec("imagenet_resized_256")["revision"]
 TRAIN_SHARD_TEMPLATE = "data/train-{idx:05d}-of-00052-"
 VAL_SHARD_TEMPLATE = "data/val-{idx:05d}-of-00002-"
 
 
-def _list_dataset_files(token: str | None = None) -> list[str]:
+def _list_dataset_files(
+    token: str | None = None, revision: str = DATASET_REVISION
+) -> list[str]:
     from huggingface_hub import HfApi
     api = HfApi()
-    info = api.dataset_info(DATASET_REPO, token=token)
+    info = api.dataset_info(DATASET_REPO, token=token, revision=revision)
     return [s.rfilename for s in info.siblings]
 
 
@@ -90,10 +95,18 @@ def _resolve_shard_filename(prefix: str, all_files: list[str]) -> str:
     return matches[0]
 
 
-def _load_shard_table(filename: str, token: str | None = None):
+def _load_shard_table(
+    filename: str,
+    token: str | None = None,
+    revision: str = DATASET_REVISION,
+):
     logger.info("Downloading parquet shard: %s", filename)
     local_path = hf_hub_download(
-        repo_id=DATASET_REPO, repo_type="dataset", filename=filename, token=token
+        repo_id=DATASET_REPO,
+        repo_type="dataset",
+        filename=filename,
+        revision=revision,
+        token=token,
     )
     logger.info("  -> %s", local_path)
     return pq.read_table(local_path)
@@ -159,6 +172,11 @@ def parse_args():
     p.add_argument("--jpeg-quality", type=int, default=90)
     p.add_argument("--output-dir", default="artifacts/vit_provenance/public_derivatives_seed0/prepared/imagenet_shard")
     p.add_argument("--token", default=os.environ.get("HF_TOKEN"))
+    p.add_argument(
+        "--dataset-revision",
+        default=DATASET_REVISION,
+        help="Immutable Hugging Face dataset commit",
+    )
     p.add_argument("--list-files", action="store_true", help="List dataset files and exit")
     return p.parse_args()
 
@@ -167,7 +185,7 @@ def main():
     args = parse_args()
 
     if args.list_files:
-        for f in _list_dataset_files(token=args.token):
+        for f in _list_dataset_files(token=args.token, revision=args.dataset_revision):
             print(f)
         return
 
@@ -176,6 +194,7 @@ def main():
 
     logger.info("=== ImageNet ViT Shard Preparation (class-balanced) ===")
     logger.info("Dataset:        %s", DATASET_REPO)
+    logger.info("Revision:       %s", args.dataset_revision)
     logger.info("Train shards:   %s", train_idxs)
     logger.info("Val shards:     %s", val_idxs)
     logger.info("Per class:      %d members + %d nonmembers",
@@ -185,17 +204,21 @@ def main():
     logger.info("Seed:           %d", args.seed)
     logger.info("Output dir:     %s", args.output_dir)
 
-    all_files = _list_dataset_files(token=args.token)
+    all_files = _list_dataset_files(token=args.token, revision=args.dataset_revision)
 
     import pyarrow as pa
     train_tables = []
     for ti in train_idxs:
         fn = _resolve_shard_filename(TRAIN_SHARD_TEMPLATE.format(idx=ti), all_files)
-        train_tables.append(_load_shard_table(fn, token=args.token))
+        train_tables.append(
+            _load_shard_table(fn, token=args.token, revision=args.dataset_revision)
+        )
     val_tables = []
     for vi in val_idxs:
         fn = _resolve_shard_filename(VAL_SHARD_TEMPLATE.format(idx=vi), all_files)
-        val_tables.append(_load_shard_table(fn, token=args.token))
+        val_tables.append(
+            _load_shard_table(fn, token=args.token, revision=args.dataset_revision)
+        )
     train_table = pa.concat_tables(train_tables)
     val_table = pa.concat_tables(val_tables)
     logger.info("Loaded %d total train rows, %d total val rows", train_table.num_rows, val_table.num_rows)
@@ -312,6 +335,8 @@ def main():
 
     manifest = {
         "dataset_repo": DATASET_REPO,
+        "dataset_revision": args.dataset_revision,
+        "input_lock_sha256": lock_sha256(),
         "train_shard_idxs": train_idxs,
         "val_shard_idxs": val_idxs,
         "members_per_class": args.members_per_class,

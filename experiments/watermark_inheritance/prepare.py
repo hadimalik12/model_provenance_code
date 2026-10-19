@@ -13,6 +13,7 @@ import subprocess
 import unicodedata
 
 from .common import fingerprint, load_config, load_json, read_jsonl, write_json, write_jsonl
+from src.shard_audit.reproducibility import dataset_spec, lock_sha256, model_revision
 
 
 def file_sha256(path):
@@ -63,26 +64,38 @@ def validate_tokenizer(tokenizer):
 
 
 def download_inputs(config, shared_dir):
-    """Resolve immutable revisions once, then resume their downloads safely."""
+    """Download only the immutable revisions recorded in the repository lock."""
     from datasets import load_dataset, load_from_disk
-    from huggingface_hub import HfApi, snapshot_download
+    from huggingface_hub import snapshot_download
 
     shared_dir = Path(shared_dir)
     shared_dir.mkdir(parents=True, exist_ok=True)
     plan_path = shared_dir / "download_plan.json"
-    api = HfApi()
+    model_id = "EleutherAI/pythia-1b"
+    expected_plan = {
+        "model": {"id": model_id, "revision": model_revision(model_id)},
+        "datasets": {
+            name: {
+                "id": spec["repo_id"],
+                "revision": spec["revision"],
+                "config": spec.get("config"),
+                "split": spec["split"],
+            }
+            for name, spec in (
+                ("wikitext", dataset_spec("wikitext")),
+                ("dolly", dataset_spec("dolly")),
+            )
+        },
+        "input_lock_sha256": lock_sha256(),
+    }
     if plan_path.exists():
         plan = load_json(plan_path)
+        if plan != expected_plan:
+            raise RuntimeError(
+                f"Existing download plan does not match the repository input lock: {plan_path}"
+            )
     else:
-        model_id = "EleutherAI/pythia-1b"
-        plan = {"model": {"id": model_id, "revision": api.model_info(model_id).sha},
-                "datasets": {}}
-        for name, repo_id, subset in [
-            ("wikitext", "Salesforce/wikitext", "wikitext-103-raw-v1"),
-            ("dolly", "databricks/databricks-dolly-15k", None),
-        ]:
-            plan["datasets"][name] = {"id": repo_id, "revision": api.dataset_info(repo_id).sha,
-                                      "config": subset, "split": "train"}
+        plan = expected_plan
         write_json(plan_path, plan)
     model_path = Path(config["model_path"]).resolve()
     snapshot_download(plan["model"]["id"], revision=plan["model"]["revision"],
@@ -103,7 +116,12 @@ def download_inputs(config, shared_dir):
                 raise RuntimeError(f"Existing dataset lacks matching pinned metadata: {destination}")
             dataset = load_from_disk(str(destination))
         else:
-            dataset = load_dataset(spec["id"], name=spec["config"], revision=spec["revision"], split="train")
+            dataset = load_dataset(
+                spec["id"],
+                name=spec["config"],
+                revision=spec["revision"],
+                split=spec["split"],
+            )
             dataset.save_to_disk(str(destination))
             write_json(marker, spec)
         manifest["datasets"][name] = dict(spec, rows=len(dataset), path=str(destination.resolve()),

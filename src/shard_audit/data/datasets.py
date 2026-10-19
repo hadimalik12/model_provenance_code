@@ -25,9 +25,12 @@ import hashlib
 import logging
 from typing import Optional
 
+from src.shard_audit.reproducibility import dataset_spec
+
 logger = logging.getLogger(__name__)
 
 DATASET_ID = "iamgroot42/mimir"
+DATASET_REVISION = dataset_spec("mimir")["revision"]
 KNOWN_CONFIGS = [
     "arxiv", "dm_mathematics", "github", "hackernews", "pile_cc",
     "pubmed_central", "wikipedia_(en)", "full_pile", "c4",
@@ -56,21 +59,27 @@ def _nonmember_filename(config: str, split: str) -> str:
     return f"{_cache_prefix(config)}/test/{config}{suffix}.jsonl"
 
 
-def list_configs(token: Optional[str] = None) -> list:
+def list_configs(token: Optional[str] = None, revision: str = DATASET_REVISION) -> list:
     """Return available configs for the MIMIR dataset."""
     try:
         from datasets import get_dataset_config_names  # noqa: PLC0415
-        return get_dataset_config_names(DATASET_ID, token=token)
+        return get_dataset_config_names(DATASET_ID, token=token, revision=revision)
     except Exception as e:
         logger.warning("Could not list configs via datasets API (%s); returning known list.", e)
         return KNOWN_CONFIGS
 
 
-def list_splits(config: str = "github", token: Optional[str] = None) -> list:
+def list_splits(
+    config: str = "github",
+    token: Optional[str] = None,
+    revision: str = DATASET_REVISION,
+) -> list:
     """Return available n-gram splits for a given config."""
     try:
         from datasets import get_dataset_split_names  # noqa: PLC0415
-        return get_dataset_split_names(DATASET_ID, config_name=config, token=token)
+        return get_dataset_split_names(
+            DATASET_ID, config_name=config, token=token, revision=revision
+        )
     except Exception as e:
         logger.warning("Could not list splits via datasets API (%s); returning known list.", e)
         return KNOWN_SPLITS
@@ -98,6 +107,7 @@ def load_mimir_github_via_hub_download(
     config: str = "github",
     split: str = "ngram_13_0.2",
     token: Optional[str] = None,
+    revision: str = DATASET_REVISION,
 ) -> tuple:
     """Download MIMIR JSONL files directly and return (members, nonmembers).
 
@@ -118,6 +128,7 @@ def load_mimir_github_via_hub_download(
         repo_id=DATASET_ID,
         filename=member_file,
         repo_type="dataset",
+        revision=revision,
         token=token,
     )
     logger.info("Downloading nonmember file: %s", nonmember_file)
@@ -125,6 +136,7 @@ def load_mimir_github_via_hub_download(
         repo_id=DATASET_ID,
         filename=nonmember_file,
         repo_type="dataset",
+        revision=revision,
         token=token,
     )
 
@@ -144,19 +156,21 @@ def load_mimir_github(
     config: str = "github",
     split: str = "ngram_13_0.2",
     token: Optional[str] = None,
+    revision: str = DATASET_REVISION,
 ) -> tuple:
     """Load MIMIR GitHub member/nonmember texts via direct hub download.
 
     Returns:
         (member_texts: list[str], nonmember_texts: list[str])
     """
-    return load_mimir_github_via_hub_download(config, split, token)
+    return load_mimir_github_via_hub_download(config, split, token, revision)
 
 
 def load_mimir_github_nonmembers(
     config: str = "github",
     split: str = "ngram_13_0.2",
     token: Optional[str] = None,
+    revision: str = DATASET_REVISION,
 ) -> list:
     """Download only the MIMIR GitHub nonmember (test-side) texts.
 
@@ -171,6 +185,7 @@ def load_mimir_github_nonmembers(
         repo_id=DATASET_ID,
         filename=nonmember_file,
         repo_type="dataset",
+        revision=revision,
         token=token,
     )
     nonmembers = load_texts_from_jsonl(nonmember_path)

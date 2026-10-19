@@ -13,13 +13,19 @@ import subprocess
 
 from .common import load_config, read_jsonl, write_json
 from .prepare import CompletionIndex, encode_dolly, file_sha256, normalize_text
+from src.shard_audit.reproducibility import dataset_spec
 
 DATASET = "HuggingFaceH4/ultrachat_200k"
 REVISION = "8049631c405ae6576f93f445c6b8166f76f5505a"
 STEPS = [512, 1024, 2048, 3125, 6250, 12500, 18750]
 CORPORA = {
     "filtered": (DATASET, REVISION, "train_sft", "ultrachat_200k_train_sft"),
-    "full": ("openbmb/UltraChat", "f220fe796ce3ed62fbe1681b45ce6cbc9c6cabe0", "train", "ultrachat_full_train"),
+    "full": (
+        dataset_spec("ultrachat")["repo_id"],
+        dataset_spec("ultrachat")["revision"],
+        dataset_spec("ultrachat")["split"],
+        "ultrachat_full_train",
+    ),
 }
 
 

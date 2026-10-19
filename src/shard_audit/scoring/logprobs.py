@@ -29,6 +29,9 @@ def load_model_and_tokenizer(
     device,
     dtype_str: str = "auto",
     quantization: str = "none",
+    model_revision: str | None = None,
+    tokenizer_name: str | None = None,
+    tokenizer_revision: str | None = None,
 ):
     """Load a HuggingFace causal LM and its tokenizer.
 
@@ -37,8 +40,12 @@ def load_model_and_tokenizer(
     import torch
     from transformers import AutoTokenizer, AutoModelForCausalLM
 
+    tokenizer_name = tokenizer_name or model_name
+    tokenizer_kwargs = {"revision": tokenizer_revision or model_revision} if (
+        tokenizer_revision or model_revision
+    ) else {}
     try:
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, **tokenizer_kwargs)
     except Exception as err:
         base_fallback = "EleutherAI/pythia-1.4b"
         if "1b" in model_name.lower() and "1.4" not in model_name.lower():
@@ -51,7 +58,11 @@ def load_model_and_tokenizer(
             "Failed to load tokenizer for '%s' (%s). Falling back to base tokenizer '%s'.",
             model_name, err, base_fallback
         )
-        tokenizer = AutoTokenizer.from_pretrained(base_fallback)
+        from src.shard_audit.reproducibility import model_revision as pinned_revision
+
+        tokenizer = AutoTokenizer.from_pretrained(
+            base_fallback, revision=pinned_revision(base_fallback)
+        )
 
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
@@ -77,6 +88,8 @@ def load_model_and_tokenizer(
         "torch_dtype": dtype,
         "device_map": device_map,
     }
+    if model_revision:
+        model_kwargs["revision"] = model_revision
     if quantization == "int8":
         if "cuda" not in dev_str:
             raise ValueError("LLM.int8 quantization requires a CUDA device.")
@@ -97,8 +110,8 @@ def load_model_and_tokenizer(
     model.eval()
     model_device = getattr(model, "device", device)
     logger.info(
-        "Loaded %s on %s with dtype=%s quantization=%s",
-        model_name, model_device, dtype, quantization,
+        "Loaded %s@%s on %s with dtype=%s quantization=%s",
+        model_name, model_revision or "unlocked", model_device, dtype, quantization,
     )
     return model, tokenizer
 

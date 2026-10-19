@@ -33,6 +33,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from src.shard_audit.reproducibility import model_revision
+
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PYTHON = sys.executable
@@ -179,7 +181,7 @@ def score_and_audit(
 
     run([
         PYTHON, "scripts/scoring/score_causal_lm_logprobs.py",
-        "--model", model,
+        "--model", model, "--model-revision", model_revision(model),
         "--train-file", str(main_data / "train.jsonl"),
         "--test-file", str(main_data / "test.jsonl"),
         "--output-dir", str(main_scores),
@@ -202,7 +204,7 @@ def score_and_audit(
         control_results = seed_root / "results" / "nonmember_control" / model_slug
         run([
             PYTHON, "scripts/scoring/score_causal_lm_logprobs.py",
-            "--model", model,
+            "--model", model, "--model-revision", model_revision(model),
             "--train-file", str(control_data / "train.jsonl"),
             "--test-file", str(control_data / "test.jsonl"),
             "--output-dir", str(control_scores),
