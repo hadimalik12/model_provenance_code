@@ -13,7 +13,22 @@ import subprocess
 import unicodedata
 
 from .common import fingerprint, load_config, load_json, read_jsonl, write_json, write_jsonl
-from src.shard_audit.reproducibility import dataset_spec, lock_sha256, model_revision
+
+
+DATASETS = {
+    "wikitext": {
+        "id": "Salesforce/wikitext",
+        "revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+        "config": "wikitext-103-raw-v1",
+        "split": "train",
+    },
+    "dolly": {
+        "id": "databricks/databricks-dolly-15k",
+        "revision": "bdd27f4d94b9c1f951818a7da7fd7aeea5dbff1a",
+        "config": None,
+        "split": "train",
+    },
+}
 
 
 def file_sha256(path):
@@ -64,35 +79,25 @@ def validate_tokenizer(tokenizer):
 
 
 def download_inputs(config, shared_dir):
-    """Download only the immutable revisions recorded in the repository lock."""
+    """Download only the immutable revisions declared by this experiment."""
     from datasets import load_dataset, load_from_disk
     from huggingface_hub import snapshot_download
 
     shared_dir = Path(shared_dir)
     shared_dir.mkdir(parents=True, exist_ok=True)
     plan_path = shared_dir / "download_plan.json"
-    model_id = "EleutherAI/pythia-1b"
     expected_plan = {
-        "model": {"id": model_id, "revision": model_revision(model_id)},
-        "datasets": {
-            name: {
-                "id": spec["repo_id"],
-                "revision": spec["revision"],
-                "config": spec.get("config"),
-                "split": spec["split"],
-            }
-            for name, spec in (
-                ("wikitext", dataset_spec("wikitext")),
-                ("dolly", dataset_spec("dolly")),
-            )
+        "model": {
+            "id": config["model_id"],
+            "revision": config["model_revision"],
         },
-        "input_lock_sha256": lock_sha256(),
+        "datasets": DATASETS,
     }
     if plan_path.exists():
         plan = load_json(plan_path)
         if plan != expected_plan:
             raise RuntimeError(
-                f"Existing download plan does not match the repository input lock: {plan_path}"
+                f"Existing download plan does not match this experiment: {plan_path}"
             )
     else:
         plan = expected_plan

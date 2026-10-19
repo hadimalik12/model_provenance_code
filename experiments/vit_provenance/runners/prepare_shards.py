@@ -63,8 +63,6 @@ from huggingface_hub import hf_hub_download
 import pyarrow.parquet as pq
 from PIL import Image
 
-from src.shard_audit.reproducibility import dataset_spec, lock_sha256
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -74,7 +72,7 @@ logger = logging.getLogger(__name__)
 
 
 DATASET_REPO = "evanarlian/imagenet_1k_resized_256"
-DATASET_REVISION = dataset_spec("imagenet_resized_256")["revision"]
+DATASET_REVISION = "8de107e08d1f61884d5a4ec2dea8740667264a60"
 TRAIN_SHARD_TEMPLATE = "data/train-{idx:05d}-of-00052-"
 VAL_SHARD_TEMPLATE = "data/val-{idx:05d}-of-00002-"
 
@@ -336,7 +334,6 @@ def main():
     manifest = {
         "dataset_repo": DATASET_REPO,
         "dataset_revision": args.dataset_revision,
-        "input_lock_sha256": lock_sha256(),
         "train_shard_idxs": train_idxs,
         "val_shard_idxs": val_idxs,
         "members_per_class": args.members_per_class,

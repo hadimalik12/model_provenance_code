@@ -25,12 +25,10 @@ import hashlib
 import logging
 from typing import Optional
 
-from src.shard_audit.reproducibility import dataset_spec
-
 logger = logging.getLogger(__name__)
 
 DATASET_ID = "iamgroot42/mimir"
-DATASET_REVISION = dataset_spec("mimir")["revision"]
+DATASET_REVISION = "02500d3b7cece0cb7628e939ba9fc93fdb6362ae"
 KNOWN_CONFIGS = [
     "arxiv", "dm_mathematics", "github", "hackernews", "pile_cc",
     "pubmed_central", "wikipedia_(en)", "full_pile", "c4",

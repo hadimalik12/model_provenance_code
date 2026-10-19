@@ -30,7 +30,6 @@ from src.shard_audit.scoring.vit_scores import (
     centered_logit_variance,
     make_random_init_model,
 )
-from src.shard_audit.reproducibility import lock_sha256, model_revision
 
 
 LOGGER = logging.getLogger(__name__)
@@ -126,7 +125,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--target-model", required=True)
     parser.add_argument(
         "--target-revision",
-        help="Immutable Hugging Face model commit; defaults to the input lock",
+        help="Immutable Hugging Face model commit; required for remote models",
     )
     parser.add_argument("--random-init", action="store_true")
     parser.add_argument("--random-seed", type=int, default=0)
@@ -169,9 +168,9 @@ def main() -> None:
     local_target = Path(args.target_model).exists()
     if local_target and args.target_revision:
         raise ValueError("--target-revision cannot be used with a local checkpoint")
-    revision = None if local_target else (
-        args.target_revision or model_revision(args.target_model)
-    )
+    if not local_target and not args.target_revision:
+        raise ValueError("--target-revision is required for a remote model")
+    revision = None if local_target else args.target_revision
 
     if args.random_init:
         target_model = make_random_init_model(
@@ -249,7 +248,6 @@ def main() -> None:
         "target_model": args.target_model,
         "target_revision": revision,
         "target_label": target_label,
-        "input_lock_sha256": lock_sha256(),
         "random_init": args.random_init,
         "score": "negative_mean_population_variance_of_view_centered_log_probabilities",
         "score_key": "clv_score",

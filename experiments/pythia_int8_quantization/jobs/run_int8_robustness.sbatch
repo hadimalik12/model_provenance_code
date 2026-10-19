@@ -10,12 +10,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-if [ -n "${SLURM_SUBMIT_DIR:-}" ]; then
-  REPO_ROOT="$SLURM_SUBMIT_DIR"
-else
-  REPO_ROOT="$(cd -- "$SCRIPT_DIR/../../.." && pwd)"
-fi
+REPO_ROOT="$(git -C "${SLURM_SUBMIT_DIR:-$PWD}" rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
 if [ -f "$REPO_ROOT/.env" ]; then
@@ -35,7 +30,7 @@ export HF_HUB_CACHE="$REPO_ROOT/.cache/huggingface"
 mkdir -p experiments/pythia_int8_quantization/logs
 
 python scripts/setup/verify_hf_model_access.py \
-  --model EleutherAI/pythia-1.4b \
-  --model herMaster/pythia1.4B-finetuned-on-lamini-docs
+  --model EleutherAI/pythia-1.4b@fedc38a16eea3bd36a96b906d78d11d2ce18ed79 \
+  --model herMaster/pythia1.4B-finetuned-on-lamini-docs@a6c699d6832bd3852c13d9c728c8599666b04c22
 
 python experiments/pythia_int8_quantization/runners/run_int8_robustness.py --resume

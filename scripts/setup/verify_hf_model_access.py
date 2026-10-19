@@ -4,28 +4,27 @@ from __future__ import annotations
 
 import argparse
 import os
-import sys
-from pathlib import Path
-
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from src.shard_audit.reproducibility import model_revision
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--model", action="append", required=True,
-                        help="Hugging Face model ID; may be supplied repeatedly.")
+    parser.add_argument(
+        "--model",
+        action="append",
+        required=True,
+        help="Pinned Hugging Face model as REPO_ID@REVISION; may be repeated.",
+    )
     args = parser.parse_args()
 
     from transformers import AutoConfig
 
     token = os.environ.get("HF_TOKEN")
-    for model_id in args.model:
-        revision = model_revision(model_id)
+    for model_spec in args.model:
+        if "@" not in model_spec:
+            raise SystemExit(f"Model must include an immutable revision: {model_spec}")
+        model_id, revision = model_spec.rsplit("@", 1)
+        if len(revision) != 40:
+            raise SystemExit(f"Revision must be a 40-character commit: {model_spec}")
         config = AutoConfig.from_pretrained(
             model_id, revision=revision, token=token
         )

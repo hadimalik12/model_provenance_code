@@ -58,10 +58,9 @@ def load_model_and_tokenizer(
             "Failed to load tokenizer for '%s' (%s). Falling back to base tokenizer '%s'.",
             model_name, err, base_fallback
         )
-        from src.shard_audit.reproducibility import model_revision as pinned_revision
-
         tokenizer = AutoTokenizer.from_pretrained(
-            base_fallback, revision=pinned_revision(base_fallback)
+            base_fallback,
+            revision="fedc38a16eea3bd36a96b906d78d11d2ce18ed79",
         )
 
     if tokenizer.pad_token is None:

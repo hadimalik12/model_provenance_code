@@ -33,12 +33,42 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.shard_audit.reproducibility import model_revision
-
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PYTHON = sys.executable
 SCORES = "mean_logprob,min_k_20_logprob"
+MIMIR_REVISION = "02500d3b7cece0cb7628e939ba9fc93fdb6362ae"
+MODEL_REVISIONS = {
+    "EleutherAI/pythia-1b": "f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2",
+    "Leogrin/eleuther-pythia1b-hh-sft": "b29293529d7fb430257df6ae8079afeba2f42f9b",
+    "EleutherAI/pythia-1.4b": "fedc38a16eea3bd36a96b906d78d11d2ce18ed79",
+    "herMaster/pythia1.4B-finetuned-on-lamini-docs": "a6c699d6832bd3852c13d9c728c8599666b04c22",
+    "kykim0/pythia-1.4b-tulu-v2-mix": "4d21350c5197fcfc6cac0b2db277c3e9a158b303",
+    "LinguaCustodia/fin-pythia-1.4b": "818675a1325994d01daaec677b9ac40dddcc916d",
+    "lomahony/pythia-1.4b-helpful-dpo": "599b0f9ff8bdbccb4ccc8bf8a6a3cb7770c1b800",
+    "lomahony/pythia-1.4b-helpful-sft": "da0e31a28430fe2b03b009ebbfdbee74010931c2",
+    "nnheui/pythia-1.4b-sft-full": None,
+    "EleutherAI/pythia-6.9b": "c0e3eee36dc47af0c49f361c74cfe459c09f7f23",
+    "allenai/open-instruct-pythia-6.9b-tulu": "958b73d2d0e92189bae7ef3bd4036f9b5b508bea",
+    "lomahony/eleuther-pythia6.9b-hh-dpo": "f9eae2bc28c84768c79428f1affcff32e48cf688",
+    "lomahony/eleuther-pythia6.9b-hh-sft": "8ca04ae6e59da4f9bd86ad8f3d760b99ac862b01",
+    "pkarypis/pythia-ultrachat": "0561fb5d49b92fe0a3677f3f701503d55e8ed1af",
+    "usvsnsp/pythia-6.9b-ppo": "9ee543790de178dbc99d5ef83ee51b0b4cd32441",
+    "EleutherAI/pythia-12b": "bb1e3e710cdf6b524461d543cfb5ba773f0a81b6",
+    "lomahony/eleuther-pythia12b-hh-dpo": "6fc4cb69334241bbe93631f268c6f42bc05999d1",
+    "lomahony/eleuther-pythia12b-hh-sft": "e12cdad97eb968c59d5d63de3e0057fac82ded88",
+}
+
+
+def pinned_revision(model: str) -> str:
+    if model not in MODEL_REVISIONS:
+        raise KeyError(f"No immutable revision declared for {model}")
+    revision = MODEL_REVISIONS[model]
+    if revision is None:
+        raise RuntimeError(
+            f"Cannot reproduce {model}: the original Hugging Face repository "
+            "no longer serves its model files"
+        )
+    return revision
 
 
 @dataclass(frozen=True)
@@ -145,6 +175,7 @@ def prepare_data(args: argparse.Namespace, seed: int, seed_root: Path) -> tuple[
     run([
         PYTHON, "scripts/data/prepare_mimir_domain.py",
         "--config", "github", "--split", "ngram_13_0.2",
+        "--dataset-revision", MIMIR_REVISION,
         "--num-train-member", str(args.calibration_members),
         "--num-train-nonmember", str(args.calibration_nonmembers),
         "--num-test-per-class", str(args.heldout_per_class),
@@ -156,6 +187,7 @@ def prepare_data(args: argparse.Namespace, seed: int, seed_root: Path) -> tuple[
         run([
             PYTHON, "scripts/data/prepare_mimir_domain_nonmember_control.py",
             "--config", "github", "--ngram-split", "ngram_13_0.2",
+            "--dataset-revision", MIMIR_REVISION,
             "--num-train-per-class", str(args.calibration_nonmembers),
             "--num-test-per-class", str(args.heldout_per_class),
             "--max-words", str(args.max_words), "--min-words", str(args.min_words),
@@ -181,7 +213,7 @@ def score_and_audit(
 
     run([
         PYTHON, "scripts/scoring/score_causal_lm_logprobs.py",
-        "--model", model, "--model-revision", model_revision(model),
+        "--model", model, "--model-revision", pinned_revision(model),
         "--train-file", str(main_data / "train.jsonl"),
         "--test-file", str(main_data / "test.jsonl"),
         "--output-dir", str(main_scores),
@@ -204,7 +236,7 @@ def score_and_audit(
         control_results = seed_root / "results" / "nonmember_control" / model_slug
         run([
             PYTHON, "scripts/scoring/score_causal_lm_logprobs.py",
-            "--model", model, "--model-revision", model_revision(model),
+            "--model", model, "--model-revision", pinned_revision(model),
             "--train-file", str(control_data / "train.jsonl"),
             "--test-file", str(control_data / "test.jsonl"),
             "--output-dir", str(control_scores),

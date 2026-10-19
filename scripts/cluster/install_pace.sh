@@ -36,7 +36,7 @@ hash -r
 
 "$PIP" install pip==26.1.2 setuptools==83.0.0 wheel==0.47.0
 PYTHONNOUSERSITE=1 "$PIP" install torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cu121
-PYTHONNOUSERSITE=1 "$PIP" install -r "$REPO_ROOT/reproducibility/requirements-lock.txt"
+PYTHONNOUSERSITE=1 "$PIP" install -r "$REPO_ROOT/requirements.txt"
 if [ -f "$REPO_ROOT/pyproject.toml" ] || [ -f "$REPO_ROOT/setup.py" ]; then
     PYTHONNOUSERSITE=1 "$PIP" install -e "$REPO_ROOT"
 fi

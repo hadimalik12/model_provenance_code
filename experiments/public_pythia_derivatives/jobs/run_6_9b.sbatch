@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-REPO_ROOT="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
+REPO_ROOT="$(git -C "${SLURM_SUBMIT_DIR:-$PWD}" rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 if [ -f .env ]; then
   # shellcheck disable=SC1091

@@ -8,8 +8,8 @@
 #SBATCH --output=artifacts/watermark_inheritance/setup/logs/%x-%j.out
 #SBATCH --error=artifacts/watermark_inheritance/setup/logs/%x-%j.err
 set -euo pipefail
-cd -P "${SLURM_SUBMIT_DIR:?Submit from the repository root}"
-REPO_ROOT=$(pwd -P)
+REPO_ROOT="$(git -C "${SLURM_SUBMIT_DIR:-$PWD}" rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
 module load pytorch/25 anaconda3 2>/dev/null || true
 unset PYTHONHOME PYTHONPATH LD_PRELOAD LD_LIBRARY_PATH
 export PYTHONPATH="$REPO_ROOT"
@@ -27,7 +27,7 @@ mkdir -p "$WM_ARTIFACT_ROOT/setup/logs" "$WM_SHARED_DIR" \
 "$PYTHON_BIN" -m experiments.watermark_inheritance.configure \
   --root "$WM_ARTIFACT_ROOT" --shared-dir "$WM_SHARED_DIR"
 UPSTREAM="$WM_SHARED_DIR/radioactive-watermark"
-UPSTREAM_COMMIT=$("$PYTHON_BIN" -c 'from src.shard_audit.reproducibility import external_code_spec; print(external_code_spec("radioactive_watermark")["revision"])')
+UPSTREAM_COMMIT=$("$PYTHON_BIN" -c 'from experiments.watermark_inheritance.configure import UPSTREAM_COMMIT; print(UPSTREAM_COMMIT)')
 if [ ! -d "$UPSTREAM/.git" ]; then
   git clone https://github.com/facebookresearch/radioactive-watermark.git "$UPSTREAM"
 fi

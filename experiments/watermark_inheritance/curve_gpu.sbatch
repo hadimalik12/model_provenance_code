@@ -9,8 +9,8 @@
 #SBATCH --output=artifacts/watermark_curve/setup/logs/%x-%j.out
 #SBATCH --error=artifacts/watermark_curve/setup/logs/%x-%j.err
 set -euo pipefail
-cd -P "${SLURM_SUBMIT_DIR:?Submit from the repository root}"
-REPO_ROOT=$(pwd -P)
+REPO_ROOT="$(git -C "${SLURM_SUBMIT_DIR:-$PWD}" rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
 module load pytorch/25 anaconda3 2>/dev/null || true
 unset PYTHONHOME PYTHONPATH LD_PRELOAD LD_LIBRARY_PATH
 export PYTHONPATH="$REPO_ROOT"

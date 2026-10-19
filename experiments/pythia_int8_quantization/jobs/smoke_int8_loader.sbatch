@@ -12,8 +12,7 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="${SLURM_SUBMIT_DIR:-$(cd -- "$SCRIPT_DIR/../../.." && pwd)}"
+REPO_ROOT="$(git -C "${SLURM_SUBMIT_DIR:-$PWD}" rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
 if [ -f "$REPO_ROOT/.env" ]; then
@@ -36,6 +35,7 @@ test -f "$DATA_ROOT/test.jsonl"
 
 python scripts/scoring/score_causal_lm_logprobs.py \
   --model herMaster/pythia1.4B-finetuned-on-lamini-docs \
+  --model-revision a6c699d6832bd3852c13d9c728c8599666b04c22 \
   --train-file "$DATA_ROOT/train.jsonl" \
   --test-file "$DATA_ROOT/test.jsonl" \
   --output-dir "$REPO_ROOT/artifacts/pythia_int8_quantization/int8_pythia1_4b_lamini_seed0/smoke_int8_fp32_residual" \

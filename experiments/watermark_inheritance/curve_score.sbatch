@@ -3,8 +3,8 @@
 #SBATCH --mem=6G
 #SBATCH --time=01:00:00
 set -euo pipefail
-cd -P "${SLURM_SUBMIT_DIR:?Submit from the repository root}"
-REPO_ROOT=$(pwd -P)
+REPO_ROOT="$(git -C "${SLURM_SUBMIT_DIR:-$PWD}" rev-parse --show-toplevel)"
+cd "$REPO_ROOT"
 module load pytorch/25 anaconda3 2>/dev/null || true
 unset PYTHONHOME PYTHONPATH LD_PRELOAD LD_LIBRARY_PATH
 export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 TOKENIZERS_PARALLELISM=false PYTHONUNBUFFERED=1

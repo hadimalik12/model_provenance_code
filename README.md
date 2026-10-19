@@ -29,14 +29,11 @@ tables and instructions for insertion into the manuscript source.
 bash scripts/cluster/install_pace.sh
 export HF_TOKEN=<your_huggingface_token>
 python scripts/setup/check_env.py
-python scripts/setup/check_reproducibility.py --online --allow-known-unavailable
 ```
 
-The last command verifies the exact package versions and immutable model,
-dataset, and external-code revisions recorded under `reproducibility/`. The
-flag acknowledges the historical `nnheui/pythia-1.4b-sft-full` checkpoint,
-which is documented in the input lock but is no longer available from its
-original source.
+`requirements.txt` pins the validated package versions. Each experiment keeps
+its immutable model, dataset, and external-code revisions directly beside the
+commands that download them.
 
 Each experiment README gives its full command. Scheduler account and partition
 choices are supplied through documented environment variables or normal

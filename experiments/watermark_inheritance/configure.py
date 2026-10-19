@@ -5,13 +5,11 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from src.shard_audit.reproducibility import (
-    external_code_spec,
-    lock_sha256,
-    model_revision,
-)
-
 from .common import load_json, write_json
+
+
+MODEL_REVISION = "f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2"
+UPSTREAM_COMMIT = "19c6dc90e7a0dddb1a241b73e7fae708b68f024e"
 
 
 RUNS = (
@@ -34,7 +32,7 @@ def base_config(shared_dir: Path) -> dict:
     return {
         "experiment": "watermark_inheritance",
         "model_id": "EleutherAI/pythia-1b",
-        "model_revision": model_revision("EleutherAI/pythia-1b"),
+        "model_revision": MODEL_REVISION,
         "model_path": str(model),
         "tokenizer_path": str(model),
         "upstream_path": str(shared_dir / "radioactive-watermark"),
@@ -65,8 +63,7 @@ def base_config(shared_dir: Path) -> dict:
         "cpu_threads": 1,
         "pilot": False,
         "code_commit": repository_revision(),
-        "upstream_commit": external_code_spec("radioactive_watermark")["revision"],
-        "input_lock_sha256": lock_sha256(),
+        "upstream_commit": UPSTREAM_COMMIT,
         "overlap_substring_min_chars": 32,
     }
 

@@ -9,12 +9,27 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-from src.shard_audit.reproducibility import lock_sha256, model_revision
-
-
 REPO_ROOT = Path(__file__).resolve().parents[3]
 PYTHON = sys.executable
 SCORE_KEYS = "min_k_20_logprob"
+MIMIR_REVISION = "02500d3b7cece0cb7628e939ba9fc93fdb6362ae"
+MODEL_REVISIONS = {
+    "EleutherAI/pythia-1b": "f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2",
+    "Leogrin/eleuther-pythia1b-hh-sft": "b29293529d7fb430257df6ae8079afeba2f42f9b",
+    "EleutherAI/pythia-1.4b": "fedc38a16eea3bd36a96b906d78d11d2ce18ed79",
+    "herMaster/pythia1.4B-finetuned-on-lamini-docs": "a6c699d6832bd3852c13d9c728c8599666b04c22",
+    "kykim0/pythia-1.4b-tulu-v2-mix": "4d21350c5197fcfc6cac0b2db277c3e9a158b303",
+    "LinguaCustodia/fin-pythia-1.4b": "818675a1325994d01daaec677b9ac40dddcc916d",
+    "lomahony/pythia-1.4b-helpful-dpo": "599b0f9ff8bdbccb4ccc8bf8a6a3cb7770c1b800",
+    "lomahony/pythia-1.4b-helpful-sft": "da0e31a28430fe2b03b009ebbfdbee74010931c2",
+}
+
+
+def pinned_revision(model: str) -> str:
+    try:
+        return MODEL_REVISIONS[model]
+    except KeyError as exc:
+        raise KeyError(f"No immutable revision declared for {model}") from exc
 
 
 @dataclass(frozen=True)
@@ -99,13 +114,12 @@ def main() -> None:
         json.dumps(
             {
                 "parent_model": args.parent_model,
-                "parent_revision": model_revision(args.parent_model),
+                "parent_revision": pinned_revision(args.parent_model),
                 "target_model": args.target_model,
-                "target_revision": model_revision(args.target_model),
+                "target_revision": pinned_revision(args.target_model),
                 "seed": args.seed,
                 "primary_score": "min_k_20_logprob",
                 "target_int8_residual_dtype": "float32",
-                "input_lock_sha256": lock_sha256(),
             },
             indent=2,
         )
@@ -120,6 +134,7 @@ def main() -> None:
             "scripts/data/prepare_mimir_domain.py",
             "--config", "github",
             "--split", "ngram_13_0.2",
+            "--dataset-revision", MIMIR_REVISION,
             "--num-train-member", "560",
             "--num-train-nonmember", "340",
             "--num-test-per-class", "400",
@@ -138,6 +153,7 @@ def main() -> None:
             "scripts/data/prepare_mimir_domain_nonmember_control.py",
             "--config", "github",
             "--ngram-split", "ngram_13_0.2",
+            "--dataset-revision", MIMIR_REVISION,
             "--num-train-per-class", "150",
             "--num-test-per-class", "150",
             "--max-words", "64",
@@ -163,7 +179,7 @@ def main() -> None:
                 PYTHON,
                 "scripts/scoring/score_causal_lm_logprobs.py",
                 "--model", representation.model,
-                "--model-revision", model_revision(representation.model),
+                "--model-revision", pinned_revision(representation.model),
                 "--train-file", str(main_data / "train.jsonl"),
                 "--test-file", str(main_data / "test.jsonl"),
                 "--output-dir", str(score_dir),
@@ -206,7 +222,7 @@ def main() -> None:
                     PYTHON,
                     "scripts/scoring/score_causal_lm_logprobs.py",
                     "--model", representation.model,
-                    "--model-revision", model_revision(representation.model),
+                    "--model-revision", pinned_revision(representation.model),
                     "--train-file", str(control_data / "train.jsonl"),
                     "--test-file", str(control_data / "test.jsonl"),
                     "--output-dir", str(control_scores),

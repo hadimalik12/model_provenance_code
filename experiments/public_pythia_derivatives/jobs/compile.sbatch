@@ -7,7 +7,7 @@
 #SBATCH --error=experiments/public_pythia_derivatives/logs/%x_%j.err
 
 set -euo pipefail
-REPO_ROOT="$(git -C "$(dirname "${BASH_SOURCE[0]}")" rev-parse --show-toplevel)"
+REPO_ROOT="$(git -C "${SLURM_SUBMIT_DIR:-$PWD}" rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 PYTHON="${PYTHIA_PYTHON:-${ENV_DIR:-$REPO_ROOT/.venv_pace}/bin/python}"
 test -x "$PYTHON"

@@ -63,3 +63,8 @@ For an interactive GPU allocation, the same pipeline can be run directly:
 
 `HF_TOKEN` may be supplied for gated Hugging Face assets. Generated datasets,
 scores, and model outputs remain under `artifacts/` and are not committed.
+
+The submitted `nnheui/pythia-1.4b-sft-full` result remains in the bundled
+table, but its original Hugging Face checkpoint is no longer available. The
+runner records that target explicitly and stops with a clear error rather than
+silently substituting a different archive.
