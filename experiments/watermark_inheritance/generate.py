@@ -18,22 +18,31 @@ def sampling_seed(seed, phase, pair_id, side):
     return int(fingerprint([int(seed), phase, str(pair_id), str(side)])[:15], 16)
 
 
+def configured_shard_seed(config):
+    """Use an explicit shard seed while preserving submitted-config behavior."""
+    return int(config.get("shard_seed", config["seed"]))
+
+
 def watermark_config_id(config):
     return fingerprint({key: config.get(key, default) for key, default in [
         ("watermark_key", None), ("gamma", .25), ("delta", 3.), ("ngram", 2), ("salt_key", 35317)]})
 
 
 def generation_config_id(config):
-    return fingerprint({key: config.get(key, default) for key, default in [
+    values = {key: config.get(key, default) for key, default in [
         ("seed", None), ("watermark_key", None), ("gamma", .25), ("delta", 3.),
         ("ngram", 2), ("salt_key", 35317), ("temperature", .8), ("top_p", .95),
-        ("max_new_tokens", 256), ("model_path", None), ("tokenizer_path", None)]})
+        ("max_new_tokens", 256), ("model_path", None), ("tokenizer_path", None)]}
+    if "shard_seed" in config:
+        values["shard_seed"] = int(config["shard_seed"])
+    return fingerprint(values)
 
 
 def pair_record(prompt, completions, tokenizer, config, phase):
     pair_id = prompt["pair_id"]
-    seeds = [sampling_seed(config["seed"], phase, pair_id, side) for side in range(2)]
-    assignment_seed = sampling_seed(config["seed"], phase, pair_id, "assignment")
+    seed = configured_shard_seed(config)
+    seeds = [sampling_seed(seed, phase, pair_id, side) for side in range(2)]
+    assignment_seed = sampling_seed(seed, phase, pair_id, "assignment")
     s_side = random.Random(assignment_seed).randrange(2)
     s_ids, sp_ids = completions[s_side], completions[1 - s_side]
     record = dict(prompt, s_ids=s_ids, s_prime_ids=sp_ids,
@@ -88,7 +97,8 @@ def validate_pair(row, prompt, config, phase, vocab_size=None):
         raise ValueError("Watermark configuration changed since generation")
     if row.get("generation_config_id") != generation_config_id(config):
         raise ValueError("Generation configuration changed since generation")
-    assignment_seed = sampling_seed(config["seed"], phase, row["pair_id"], "assignment")
+    seed = configured_shard_seed(config)
+    assignment_seed = sampling_seed(seed, phase, row["pair_id"], "assignment")
     s_side = random.Random(assignment_seed).randrange(2)
     if row.get("assignment_seed") != assignment_seed or row.get("s_draw_index") != s_side:
         raise ValueError("Invalid paired random side assignment")
@@ -98,7 +108,7 @@ def validate_pair(row, prompt, config, phase, vocab_size=None):
             raise ValueError("Invalid generated sequence length")
         if row.get(side + "_length") != len(ids):
             raise ValueError("Stored generation length disagrees with token IDs")
-        if row.get("sampling_seed_" + side) != sampling_seed(config["seed"], phase, row["pair_id"], index):
+        if row.get("sampling_seed_" + side) != sampling_seed(seed, phase, row["pair_id"], index):
             raise ValueError("Mismatched independent sampling seed")
         if vocab_size is not None and any(not 0 <= token < vocab_size for token in ids):
             raise ValueError("Generation contains padded/out-of-vocabulary token")
@@ -229,7 +239,8 @@ def run_worker(args, config):
             for offset in range(0, len(pending), pair_batch):
                 batch = pending[offset:offset + pair_batch]
                 inputs = [row["prompt_ids"] for row in batch for _ in range(2)]
-                seeds = [sampling_seed(config["seed"], args.phase, row["pair_id"], side) for row in batch for side in range(2)]
+                seed = configured_shard_seed(config)
+                seeds = [sampling_seed(seed, args.phase, row["pair_id"], side) for row in batch for side in range(2)]
                 outputs = sample_batch(model, tokenizer, watermark, inputs, seeds, config, device)
                 for i, prompt in enumerate(batch):
                     record = pair_record(prompt, outputs[2 * i:2 * i + 2], tokenizer, config, args.phase)

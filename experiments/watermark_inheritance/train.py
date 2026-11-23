@@ -242,7 +242,7 @@ def train_stage(run_dir: Path, stage: str, device: str = "cuda", max_steps: int 
         raise ValueError("Batch sizes must be positive")
     steps_per_epoch = math.ceil(len(examples) / effective_batch)
     total_steps = epochs * steps_per_epoch
-    stage_seed = int(config["seed"]) + (101 if stage == "parent" else 202)
+    stage_seed = int(config.get("model_seed", config["seed"])) + (101 if stage == "parent" else 202)
     _seed_everything(stage_seed)
     model = AutoModelForCausalLM.from_pretrained(source, torch_dtype=torch.float32,
                                                attn_implementation="sdpa", local_files_only=True)

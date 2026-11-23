@@ -104,6 +104,13 @@ class DataTests(unittest.TestCase):
         validate_pair(record, prompt, config, "full", 1001)
         with self.assertRaises(ValueError):
             validate_pair(record, prompt, dict(config, seed=2), "full", 1001)
+        separated = pair_record(
+            prompt, [[67], [68]], self.tokenizer,
+            {"seed": 1, "model_seed": 999, "shard_seed": 7, "watermark_key": 55}, "full",
+        )
+        self.assertEqual(
+            separated["assignment_seed"], sampling_seed(7, "full", "pair_00000", "assignment")
+        )
 
     def test_only_partial_tail_is_recovered(self):
         with tempfile.TemporaryDirectory() as temporary:

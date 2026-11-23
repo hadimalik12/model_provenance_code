@@ -84,6 +84,9 @@ class CurveTests(unittest.TestCase):
             (parent / "stage_state.json").write_text(json.dumps(state))
             new_config = dict(config, parent_run_dir=str(old), parent_config_sha256=_digest(old / "config.json"))
             self.assertEqual(validate_parent(new, new_config), parent)
+            self.assertIsNone(
+                validate_parent(new, new_config, require_checkpoint=False)
+            )
             (new / "prepared/pairs.jsonl").write_text('{"id":2}\n')
             with self.assertRaises(ValueError):
                 validate_parent(new, new_config)

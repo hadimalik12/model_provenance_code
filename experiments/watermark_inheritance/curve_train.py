@@ -33,7 +33,7 @@ def batch_indices(rows, batch_size, seed, start_step, max_steps):
         yield epoch + 1, order[position * batch_size:(position + 1) * batch_size]
 
 
-def validate_parent(run_dir, config):
+def validate_parent(run_dir, config, *, require_checkpoint=True):
     original = Path(config["parent_run_dir"])
     if _digest(original / "config.json") != config["parent_config_sha256"]:
         raise ValueError("Original parent configuration changed")
@@ -45,6 +45,8 @@ def validate_parent(run_dir, config):
     pair_path = original / "prepared/pairs.jsonl"
     if _digest(pair_path) != _digest(Path(run_dir) / "prepared/pairs.jsonl"):
         raise ValueError("Continuation audit must use the original paired shard")
+    if not require_checkpoint:
+        return None
     parent = original / "checkpoints/parent"
     state = load_json(parent / "stage_state.json")
     if (state.get("identity") != _identity(parent_config, pair_path, "parent")
@@ -62,12 +64,22 @@ def train(run_dir, stage, device="cuda:0", stop_after_step=None):
     if stage not in ("target", "control") or int(os.environ.get("WORLD_SIZE", "1")) != 1:
         raise ValueError("One GPU per target or control trajectory is required")
     torch.set_num_threads(int(config.get("cpu_threads", 1)))
-    parent = validate_parent(run_dir, config)
+    # Submitted target/control trajectories shared a completed private parent.
+    # New direct-from-base non-descendant controls must validate the witness
+    # shard identity but must not train or depend on an unused private parent.
+    require_parent = not (
+        stage == "control" and config.get("provenance_role") == "non_descendant_control"
+    )
+    parent = validate_parent(run_dir, config, require_checkpoint=require_parent)
     source = parent if stage == "target" else Path(config["model_path"])
     data = Path(config["clean_data_path"])
     manifest = load_json(config["clean_manifest_path"])
     identity = _identity(config, data, f"curve_{stage}")
-    identity["parent_state_sha256"] = _digest(parent / "stage_state.json")
+    if parent is not None:
+        identity["parent_state_sha256"] = _digest(parent / "stage_state.json")
+    else:
+        identity["parent_state_sha256"] = None
+        identity["parent_checkpoint_used"] = False
     identity["manifest_sha256"] = _digest(Path(config["clean_manifest_path"]))
     pair_digest = _digest(run_dir / "prepared/pairs.jsonl")
     if (not manifest.get("overlap_checked") or manifest["output_file_sha256"] != identity["data_sha256"]
@@ -110,7 +122,7 @@ def train(run_dir, stage, device="cuda:0", stop_after_step=None):
     steps_per_epoch = math.ceil(len(examples) / batch_size)
     if max_steps != int(config["epochs"]) * steps_per_epoch:
         raise ValueError("max_steps must cover the declared complete epochs")
-    stage_seed = int(config["seed"]) + 202  # Matched target/control data order and RNG.
+    stage_seed = int(config.get("model_seed", config["seed"])) + 202  # Matched target/control data order and RNG.
     _seed_everything(stage_seed)
     model = AutoModelForCausalLM.from_pretrained(str(latest or source), torch_dtype=torch.float32,
                                                attn_implementation="sdpa", local_files_only=True)

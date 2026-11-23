@@ -130,3 +130,47 @@ alignment, deduplication, calibrated thresholds, paired inference, and paper
 figure aggregation. The GPU pilot separately validates generation quality,
 parameter updates, checkpoint reloads, memory use, and the aggregate token
 budget before any production job can run.
+
+## AISTATS-2027 negative controls
+
+The reviewer extension is prespecified in
+`configs/aistats27_false_positive.json`.  It adds 12 independent Dolly
+non-descendant controls and three independent UltraChat controls.  Model seeds
+and paired-shard seeds are distinct fields; only one-to-one model/shard units
+count toward false-alarm precision.  Checkpoints, cross-audits, and repeated
+subsamples sharing either component are correlated sensitivity analyses.
+
+Create immutable configs and run the cheap pilot before releasing arrays:
+
+```bash
+.venv_pace/bin/python -m experiments.watermark_inheritance.reviewer_configure
+sbatch experiments/watermark_inheritance/jobs/aistats27_false_positive_pilot.sbatch
+```
+
+After validating pilot quality, memory, throughput, and the compute estimate:
+
+```bash
+bash experiments/watermark_inheritance/submit_aistats27_controls.sh
+```
+
+The submission helper preserves the preparation/training dependencies and
+prints every job ID. All stages are resumable.
+
+The selected design is estimated at 16.2 H200 GPU-hours (planning range
+12–24) plus roughly 110 GB of checkpoints.  With zero alarms, the completed
+Dolly study's 12 independent units would give a one-sided 95% false-alarm
+upper bound of 22.1%; the three UltraChat units would give 63.2%.  These are
+modest calibration checks, not proof of a 5% population false-positive rate.
+These runs estimate false attribution across independently trained models.
+Checkpoint repeats from one model are reported as correlated diagnostics, not
+as additional independent false-positive trials.
+
+The second retained negative control adds a fresh third completion shard
+`S''`, drawn from the same fixed prompts and watermarked generator as `S'` with
+disjoint per-example seeds. It reuses the detector threshold frozen on the
+2,000 `S`-versus-`S'` construction pairs and measures `S'`-versus-`S''`
+advantage only on the 8,000 held-out pairs. `S''` never selects the detector,
+threshold, checkpoint, or sample size. Low advantage is required.
+
+The submission helper schedules both negative-control families and a final
+report containing only these controls.
