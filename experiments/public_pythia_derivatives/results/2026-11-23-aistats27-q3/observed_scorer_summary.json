@@ -1,0 +1,22 @@
+{
+  "status": "observed",
+  "source": "artifacts/public_pythia_derivatives/aistats27_matched/reports/public_pythia_audit.csv",
+  "identical_models_and_splits": true,
+  "scores_share_forward_passes": true,
+  "min_k_20_logprob": {
+    "available_targets_positive": 13,
+    "available_targets_total": 13,
+    "nonmember_control_false_alarms": 0
+  },
+  "mean_logprob": {
+    "available_targets_positive": 12,
+    "available_targets_total": 13,
+    "nonmember_control_false_alarms": 0
+  },
+  "scorer_disagreement": "kykim0/pythia-1.4b-tulu-v2-mix",
+  "unavailable_target": {
+    "model": "nnheui/pythia-1.4b-sft-full",
+    "reason": "immutable submitted checkpoint is no longer served",
+    "action": "skipped_without_substitution"
+  }
+}

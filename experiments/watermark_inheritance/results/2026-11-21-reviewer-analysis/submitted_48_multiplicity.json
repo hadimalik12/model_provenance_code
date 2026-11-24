@@ -1,0 +1,27 @@
+{
+  "status": "observed_reanalysis_of_immutable_submitted_aggregates",
+  "alpha": 0.05,
+  "primary_family": {
+    "definition": "Table 1 final Dolly and 400k UltraChat target/control audits",
+    "tests": 12,
+    "positive_targets": 6,
+    "negative_controls": 6,
+    "holm_rejections": 6,
+    "control_false_alarms": 0
+  },
+  "exploratory_family": {
+    "definition": "Appendix Tables 4-5: 12 Dolly plus 36 nonzero-exposure UltraChat audits",
+    "tests": 48,
+    "positive_targets": 27,
+    "negative_controls": 21,
+    "holm_rejections": 27,
+    "bonferroni_rejections": 27,
+    "control_false_alarms_holm": 0,
+    "bonferroni_paired_cutoff": 0.0434743615968706
+  },
+  "dependence": "Holm and Bonferroni control FWER under arbitrary dependence. Checkpoint rows share models, witnesses, and held-out pairs and are not independent trials.",
+  "inputs": {
+    "experiments/watermark_inheritance/results/2026-10-06/main_results.csv": "64411d91118c00d838720ae4d38a38e3455e68f6faa3e460fe561a38397ee82e",
+    "experiments/watermark_inheritance/results/2026-10-06-distinct/curve.csv": "8428adc54bbf44aeb0dd96d596d90e2578558e6efd7862fca101b53680a6d0bf"
+  }
+}

@@ -1,3 +1,4 @@
+import math
 import unittest
 
 from experiments.watermark_inheritance.generate import sampling_seed
@@ -26,6 +27,10 @@ class NullControlTests(unittest.TestCase):
         self.assertEqual(result["p_shard"], 1.0)
         self.assertTrue(result["advantage_below_cutoff"])
         self.assertFalse(result["two_sided_null_rejected"])
+        self.assertAlmostEqual(
+            result["single_audit_advantage_cutoff"],
+            math.sqrt(2 * math.log(2 / 0.05) / 3),
+        )
 
 
 if __name__ == "__main__":

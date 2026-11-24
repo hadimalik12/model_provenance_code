@@ -51,3 +51,34 @@ so this cleanup does not invent a purportedly exact reproduction job. The CLV
 audit implementation and fixed evaluation protocol are shared with Table 8 and
 are available here; reconstructing the transformed checkpoints requires the
 original run configuration.
+
+## AISTATS 2027 train/validation diagnostics
+
+After preparing the exact class-balanced split above, run measured split
+diagnostics with:
+
+```bash
+sbatch experiments/vit_provenance/jobs/run_split_diagnostics.sbatch
+```
+
+This compares class balance, dimensions, brightness, contrast, color, exact
+and perceptual duplicates, and a held-out linear classifier on frozen CLIP
+embeddings. Embeddings are cached for resume. The runner refuses to substitute
+another image source when the prepared split is absent. These checks can find
+measured shift but cannot prove equality or exchangeability.
+
+## AISTATS 2027 independent ImageNet hard negative
+
+The Reviewer 3 Q2 control uses Meta's independently published ImageNet-1K
+DeiT-Base checkpoint against the exact public-ViT split and CLV audit:
+
+```bash
+sbatch -A gts-vzikas3 --export=ALL,HARD_NEGATIVE_MODE=smoke \
+  experiments/vit_provenance/jobs/run_hard_negative.sbatch
+sbatch -A gts-vzikas3 experiments/vit_provenance/jobs/run_hard_negative.sbatch
+```
+
+Both model and data revisions are pinned. The runner supports stage-level
+resume and refuses to substitute a different split. See
+`results/2026-11-23-hard-negative/README.md` for the prespecified
+interpretation and result status.

@@ -68,3 +68,14 @@ The submitted `nnheui/pythia-1.4b-sft-full` result remains in the bundled
 table, but its original Hugging Face checkpoint is no longer available. The
 runner records that target explicitly and stops with a clear error rather than
 silently substituting a different archive.
+
+## AISTATS 2027 split diagnostics and alternative scorer
+
+The completed matched run already stores both MIN-K 20% and mean log
+probability for every example, so the scorer comparison requires no new model
+inference. The observed summary and exact commands for the structural,
+lexical, duplicate, and frozen-embedding two-sample diagnostics are in
+[`results/2026-11-23-aistats27-q3/`](results/2026-11-23-aistats27-q3/).
+
+The diagnostics can reveal measured shift; they cannot prove that the MIMIR
+training and validation sources are exchangeable or establish exact lineage.

@@ -1,0 +1,265 @@
+{
+  "status": "observed_cpu_reanalysis_of_frozen_per_example_caches",
+  "config": {
+    "study_id": "aistats27_reviewer3_q4_calibration",
+    "analysis_seed": 20261123,
+    "alpha_values": [
+      0.01,
+      0.025,
+      0.05,
+      0.1
+    ],
+    "sample_sizes": [
+      250,
+      500,
+      1000,
+      2000,
+      4000,
+      8000
+    ],
+    "contamination_rates": [
+      0.0,
+      0.05,
+      0.1,
+      0.2,
+      0.4
+    ],
+    "subsample_replicates": 25,
+    "primary_alpha": 0.05,
+    "primary_sample_size": 8000,
+    "primary_model_endpoints": {
+      "dolly": "C3",
+      "ultrachat_controls": "UC12500"
+    },
+    "fresh_shard_endpoints": {
+      "dolly": "C3"
+    },
+    "contamination_mechanism": "Within each selected held-out pair, replace the second/control-side binary decision with the first/witness-side decision for exactly floor(rate*m) pairs selected by a fixed seed. This models witness examples leaking into the control side and can only set selected paired differences to zero.",
+    "decision_rule": "Reject when absolute paired mean decision difference is strictly greater than sqrt(2*log(2/alpha)/m).",
+    "independence_policy": "Only the 15 primary endpoint model-seed/shard-seed units are independent model-control trials. The six fresh-shard audits are a separate family. Subsamples and checkpoint repeats remain clustered by model seed and shard seed."
+  },
+  "primary_model_controls": {
+    "events": 0,
+    "trials": 15,
+    "frequency": 0.0,
+    "confidence": 0.95,
+    "two_sided_lower": 0.0,
+    "two_sided_upper": 0.218019360910534,
+    "one_sided_upper": 0.18103627252208462
+  },
+  "fresh_shard_controls": {
+    "events": 0,
+    "trials": 6,
+    "frequency": 0.0,
+    "confidence": 0.95,
+    "two_sided_lower": 0.0,
+    "two_sided_upper": 0.45925812643990044,
+    "one_sided_upper": 0.39303776899708265
+  },
+  "exact_sign_test_diagnostic": {
+    "model_controls_unadjusted_rejections": 1,
+    "model_controls_holm_rejections": 0,
+    "fresh_shard_unadjusted_rejections": 0,
+    "fresh_shard_holm_rejections": 0,
+    "note": "The manuscript's prespecified verdict uses the conservative paired advantage cutoff. Exact sign-test results are retained as a diagnostic."
+  },
+  "checkpoint_reuse": {
+    "cached_audits": 54,
+    "model_shard_clusters": 15,
+    "primary_false_alarms_unadjusted": 0,
+    "primary_false_alarms_bonferroni": 0,
+    "holm_exact_rejections": 0,
+    "interpretation": "The 54 checkpoint rows are correlated repeats from 15 model/shard clusters, not 54 independent false-positive trials."
+  },
+  "shared_witness_cross_model_audit": {
+    "status": "unrun",
+    "reason": "The frozen reviewer caches contain one independent shard per independently trained model. Auditing multiple independently trained models on the identical witness shard would require new model inference."
+  },
+  "contamination": {
+    "mechanism": "Within each selected held-out pair, replace the second/control-side binary decision with the first/witness-side decision for exactly floor(rate*m) pairs selected by a fixed seed. This models witness examples leaking into the control side and can only set selected paired differences to zero.",
+    "interpretation": "This is a fixed, non-adversarial attenuation sensitivity. It does not cover semantic contamination or independently chosen adversarial replacements."
+  },
+  "independence": "Only the 15 primary endpoint model-seed/shard-seed units are independent model-control trials. The six fresh-shard audits are a separate family. Subsamples and checkpoint repeats remain clustered by model seed and shard seed.",
+  "input_manifest": [
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_00/scores/C3/examples.jsonl",
+      "sha256": "ed6d4d93df99a429be4f6210819adce07a0d74c3a1e0c39bbbce1e5b3fa1ad53",
+      "bytes": 3537498
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_00/scores/C3/thresholds.json",
+      "sha256": "75dc287f3cc7b0120ac1e988a7fa342e173215f02c454028799932f9d7bfd3e6",
+      "bytes": 802
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_01/scores/C3/examples.jsonl",
+      "sha256": "a992c416ead63a4d41a19a4e1095d859fed1e1ddf3730c94a177f6c0cf9133b6",
+      "bytes": 3538245
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_01/scores/C3/thresholds.json",
+      "sha256": "af934066ccf5067116f70c9de03528457ad96767702176ed2417b5731f1d11d4",
+      "bytes": 800
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_02/scores/C3/examples.jsonl",
+      "sha256": "f442500fec15df591876c047ffbf6c91128d78847c70e95f9a69fd92fdd23c15",
+      "bytes": 3538485
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_02/scores/C3/thresholds.json",
+      "sha256": "e575c330075996982947c7d98c6b2b8f85d9295344974ad77192f3ab4bdea427",
+      "bytes": 800
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_03/scores/C3/examples.jsonl",
+      "sha256": "5536339157efc95e5c85dffe5524ddf1f4a93fc36c44d84bedfab03bf61c1687",
+      "bytes": 3539855
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_03/scores/C3/thresholds.json",
+      "sha256": "8bffeb78d3e806472971e5ec0fed14586ab11b57f31fcf48afaeb71dd7cfa82b",
+      "bytes": 801
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_04/scores/C3/examples.jsonl",
+      "sha256": "0b41f13af73bde596809a6a21a7ad6bfcafc656c926c035199a1027e4bf443aa",
+      "bytes": 3539370
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_04/scores/C3/thresholds.json",
+      "sha256": "6898aaa99800198117274adcb15721e70deb3bfe3b09afc13b49a09f4ce4d95d",
+      "bytes": 804
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_05/scores/C3/examples.jsonl",
+      "sha256": "b28c34843ae2dfa8551b1b7a3d3b6ef25c281dbbe1d6fcaaaeb7ed1ab1f50728",
+      "bytes": 3539620
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_05/scores/C3/thresholds.json",
+      "sha256": "07a2d35004ab714bf306e7aded7fec542efb7e43584fb67d358331c256437dd4",
+      "bytes": 801
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_06/scores/C3/examples.jsonl",
+      "sha256": "3a9bee86b2f4fca93cd0f02c00285e225935f4d346bd6814dcb41fa179dc1fe8",
+      "bytes": 3539850
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_06/scores/C3/thresholds.json",
+      "sha256": "e35ec6d1d646742ac455a99545adca844f8bd053f97010686d88d0b34dc8829c",
+      "bytes": 800
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_07/scores/C3/examples.jsonl",
+      "sha256": "20964bd8ddaa7b00a166c1def926531bff436c4c313ff7dfdbe86d8c5da41b8c",
+      "bytes": 3539505
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_07/scores/C3/thresholds.json",
+      "sha256": "10a0ebb4a763d9256f57f386cac844862b0e863fc10a7ab354bc3641282e488c",
+      "bytes": 802
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_08/scores/C3/examples.jsonl",
+      "sha256": "e24d576903f77064255fc6f23ef71f55739beb8de85e0d84d62ce35ee1d775f8",
+      "bytes": 3538498
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_08/scores/C3/thresholds.json",
+      "sha256": "f91ceeee53023536ecaf7ab02db13b42b6490a062c9bb02ca828f25a222568a5",
+      "bytes": 801
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_09/scores/C3/examples.jsonl",
+      "sha256": "98b2800428ea09d97cd00899deaf3f5a8863031081416ad03b537d19bbf25568",
+      "bytes": 3537845
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_09/scores/C3/thresholds.json",
+      "sha256": "97a23158770e303891bf955cd0c095922fff1b5bf763d5ea6dc95a96f8174d6f",
+      "bytes": 802
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_10/scores/C3/examples.jsonl",
+      "sha256": "114071fc5428d59e1187c5b6ab1356cd792c6e83c1527ea7aefa10113553bc0f",
+      "bytes": 3538551
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_10/scores/C3/thresholds.json",
+      "sha256": "25afbe83f7e0b20a5118c8f8459d8281b86a47b394a131ef402e58fce4bbbca0",
+      "bytes": 802
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_11/scores/C3/examples.jsonl",
+      "sha256": "85713b63e19da509ada5e73346c837259322d2e27e5fe1f9360ecf3d632e8d55",
+      "bytes": 3538146
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_11/scores/C3/thresholds.json",
+      "sha256": "9c1bddbdb33a1c47e66eaa91acf3d1e74da74d95cda8c968bb793d9d1a2cb4ae",
+      "bytes": 802
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/ultrachat_controls/run_00/scores/UC12500/examples.jsonl",
+      "sha256": "ceca7e69166800270d539aa1986fd92eccee788707b5868b8674fc6a9fbeb3f3",
+      "bytes": 3538816
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/ultrachat_controls/run_00/scores/UC12500/thresholds.json",
+      "sha256": "6e382bdcaf378e37fda844c6fbb66ba65b8df2c9adf43d8790fb9031c80e0cee",
+      "bytes": 801
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/ultrachat_controls/run_01/scores/UC12500/examples.jsonl",
+      "sha256": "0c663a4400c09b45cff2fbd3fc457c0404aa5c03eb8d4d6ce301c60c1de612fe",
+      "bytes": 3537144
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/ultrachat_controls/run_01/scores/UC12500/thresholds.json",
+      "sha256": "3634f2e2b55398065ead39cdb1abaa3927caf400634aaef2119d0e84b33e7f7d",
+      "bytes": 801
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/ultrachat_controls/run_02/scores/UC12500/examples.jsonl",
+      "sha256": "9f7edea7a35a19d4036db3300411737f3ec296789fe7fe2ac5093a2b111fe80b",
+      "bytes": 3538609
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/ultrachat_controls/run_02/scores/UC12500/thresholds.json",
+      "sha256": "571838236b8783265919665c1c31a167ca20d726b82d5cf754f16a22e4027a77",
+      "bytes": 800
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_00/null_scores/C3/examples.jsonl",
+      "sha256": "3a76610aa7808bf52805d0f595010aa26e262b40bc093867a3d2dfec37865133",
+      "bytes": 1066304
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_01/null_scores/C3/examples.jsonl",
+      "sha256": "ec528a5caa93e5dfc067a7c4f4241df4deda406301b820a221aed68e46f3d32a",
+      "bytes": 1066595
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_02/null_scores/C3/examples.jsonl",
+      "sha256": "4d994167c27d3d8970543a3b2ba9cf39dd54a17d06f66f5a210ebe943058577e",
+      "bytes": 1066812
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_03/null_scores/C3/examples.jsonl",
+      "sha256": "0efc6ab778a7a6fa9f00c369078a8fa9d3d67486b3648fcbf4359faff0d30750",
+      "bytes": 1067297
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_04/null_scores/C3/examples.jsonl",
+      "sha256": "a351301d0f98e2087a6b95ef55a5279e7e5b15860e3234fe5d4584a40b98ab59",
+      "bytes": 1067155
+    },
+    {
+      "path": "artifacts/watermark_inheritance/aistats27_reviewer/dolly/unit_05/null_scores/C3/examples.jsonl",
+      "sha256": "ea6096182432d04e89e4b4109c4dccc21df131e1ac6505b6ef2b771b10a1491d",
+      "bytes": 1067281
+    }
+  ]
+}

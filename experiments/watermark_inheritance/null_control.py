@@ -184,7 +184,9 @@ def null_evaluation(original_rows: list[dict], double_rows: list[dict], threshol
         [right["z"] for _, right in audit],
         threshold,
     )
-    cutoff = math.sqrt(math.log(2 / alpha) / len(audit))
+    # Match the paired Hoeffding decision rule prespecified in the manuscript:
+    # P(|mean(D)| > t) <= 2 exp(-m t^2 / 2) for D in [-1, 1].
+    cutoff = math.sqrt(2 * math.log(2 / alpha) / len(audit))
     return {
         **result,
         "alpha": alpha,

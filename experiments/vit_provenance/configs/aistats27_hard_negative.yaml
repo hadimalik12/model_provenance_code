@@ -1,0 +1,27 @@
+experiment:
+  id: vit_provenance
+  purpose: AISTATS 2027 independent ImageNet-1K transformer hard-negative control
+  variant: deit_base_imagenet1k_hard_negative
+dataset:
+  source: evanarlian/imagenet_1k_resized_256
+  revision: 8de107e08d1f61884d5a4ec2dea8740667264a60
+  prepared_split: artifacts/vit_provenance/public_derivatives_seed0/prepared/imagenet_shard
+  train_shards: [0, 1, 2, 3, 4]
+  validation_shards: [0, 1]
+  classes: 77
+  construction_images_per_class_per_shard: 25
+  evaluation_images_per_class_per_shard: 25
+target:
+  model: facebook/deit-base-patch16-224
+  revision: fb2c78a54a5637dec350432794f7b93e31f910c9
+  rationale: >-
+    Meta DeiT-Base is an independently published ImageNet-1K checkpoint from a
+    different transformer training lineage than google/vit-base-patch16-224.
+    It shares ImageNet-1K exposure but is not a fine-tune of the claimed parent.
+scoring:
+  method: centered_logit_variance
+  fixed_views: 8
+  primary_score: clv_score
+  alpha: 0.05
+outputs:
+  run_id: aistats27_hard_negative/deit_base_imagenet1k

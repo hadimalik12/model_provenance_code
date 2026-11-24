@@ -1,0 +1,16 @@
+{
+  "status": "observed",
+  "target_model": "facebook/deit-base-patch16-224",
+  "target_revision": "fb2c78a54a5637dec350432794f7b93e31f910c9",
+  "claimed_parent": "google/vit-base-patch16-224",
+  "shared_training_data": "ImageNet-1K",
+  "evaluation_pairs": 1925,
+  "signed_shard_advantage": 0.0083,
+  "cutoff": 0.043775575554458705,
+  "decision": "fail_to_reject",
+  "shuffled_label_advantage": 0.0020779220779220814,
+  "production_job": 16063127,
+  "production_elapsed": "00:09:15",
+  "production_h200_hours": 0.15416666666666667,
+  "interpretation": "Supports specificity for this tested hard negative; does not prove exact lineage or estimate a population false-positive rate precisely."
+}
