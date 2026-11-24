@@ -1,0 +1,7 @@
+model,role,score,evaluation_members,evaluation_nonmembers,signed_advantage,auc,single_audit_cutoff,familywise_cutoff,familywise_decision,shuffled_label_advantage,forward_passes,scored_tokens,wall_seconds
+EleutherAI/gpt-neo-1.3B,same Pile unrelated model,min_k_20_logprob,400,400,0.3050,0.7322,0.0960,0.1047,detects_witness,0.0050,370,192232,173.5563
+allenai/tulu-2-7b,Llama family same Tulu V2 mixture,min_k_20_logprob,400,400,0.2725,0.6968,0.0960,0.1047,detects_witness,0.0100,1480,206607,396.5718
+EleutherAI/gpt-neo-1.3B,same Pile unrelated model,mean_logprob,400,400,0.3900,0.7555,0.0960,0.1047,detects_witness,0.0300,370,192232,173.5563
+allenai/tulu-2-7b,Llama family same Tulu V2 mixture,mean_logprob,400,400,0.3350,0.7183,0.0960,0.1047,detects_witness,0.0075,1480,206607,396.5718
+kykim0/pythia-1.4b-tulu-v2-mix,cached Pythia Tulu comparator,min_k_20_logprob,400,400,0.1200,0.5814,0.0960,not_applicable,detects_witness,,370,185202,239.8575
+kykim0/pythia-1.4b-tulu-v2-mix,cached Pythia Tulu comparator,mean_logprob,400,400,0.0675,0.5523,0.0960,not_applicable,no_witness_detection,,370,185202,239.8575
