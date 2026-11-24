@@ -79,3 +79,10 @@ lexical, duplicate, and frozen-embedding two-sample diagnostics are in
 
 The diagnostics can reveal measured shift; they cannot prove that the MIMIR
 training and validation sources are exchangeable or establish exact lineage.
+
+## AISTATS 2027 public negative controls
+
+The held-out same-Pile unrelated-model and same-downstream-data cross-family
+controls are isolated from the submitted model roster. Their frozen design,
+commands, and interpretation are documented in
+[`results/2026-11-23-public-negative-controls/`](results/2026-11-23-public-negative-controls/).

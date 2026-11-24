@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import sys
+import time
 from datetime import datetime
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -182,6 +183,7 @@ def parse_args():
 
 def main():
     args = parse_args()
+    total_started = time.perf_counter()
     k_pcts = [int(k) for k in args.min_k_pcts.split(",")]
 
     logger.info("=== Log-Probability Score Extraction ===")
@@ -208,6 +210,7 @@ def main():
 
     # Load model
     logger.info("\nLoading model %s...", args.model)
+    load_started = time.perf_counter()
     device = get_device(args.device)
     logger.info("Device: %s", device)
     model, tokenizer = load_model_and_tokenizer(
@@ -219,6 +222,7 @@ def main():
         tokenizer_name=args.tokenizer_model,
         tokenizer_revision=args.tokenizer_revision,
     )
+    model_load_seconds = time.perf_counter() - load_started
 
     import torch
     actual_dtype = next(model.parameters()).dtype
@@ -226,6 +230,7 @@ def main():
 
     # Score
     logger.info("\nScoring %d train examples...", len(train_records))
+    scoring_started = time.perf_counter()
     train_scores, train_debug = score_records(
         train_records, model, tokenizer, device,
         k_pcts=k_pcts, batch_size=args.batch_size,
@@ -240,6 +245,7 @@ def main():
         debug_n=0, model_name=args.model,
         max_length=args.max_length,
     )
+    scoring_wall_seconds = time.perf_counter() - scoring_started
 
     # Sanity checks on scores
     train_sc_check = check_score_records(train_scores, k_pcts=tuple(k_pcts))
@@ -302,6 +308,27 @@ def main():
         "k_pcts": k_pcts,
         "n_train_scored": len(train_scores),
         "n_test_scored": len(test_scores),
+        "cost": {
+            "model_forward_passes": (
+                (len(train_scores) + args.batch_size - 1) // args.batch_size
+                + (len(test_scores) + args.batch_size - 1) // args.batch_size
+            ),
+            "queried_sequences": len(train_scores) + len(test_scores),
+            "input_tokens": sum(
+                record["num_input_tokens"] for record in train_scores + test_scores
+            ),
+            "scored_tokens": sum(
+                record["num_scored_tokens"] for record in train_scores + test_scores
+            ),
+            "model_load_seconds": model_load_seconds,
+            "scoring_wall_seconds": scoring_wall_seconds,
+            "total_wall_seconds": time.perf_counter() - total_started,
+            "scores_from_same_forward_passes": [
+                "mean_logprob",
+                *[f"min_k_{k}_logprob" for k in k_pcts],
+            ],
+            "incremental_forward_passes_per_additional_listed_score": 0,
+        },
         "token_length_histogram": tok_hist,
         "score_diagnostics_train": {
             k: {kk: (round(vv, 6) if isinstance(vv, float) else vv)
