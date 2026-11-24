@@ -26,6 +26,17 @@ def test_public_control_roster_and_revisions_are_frozen() -> None:
     assert SECONDARY_SCORE == "mean_logprob"
 
 
+def test_tokenizer_fallback_is_limited_to_compatible_pythia_models() -> None:
+    from src.shard_audit.scoring.logprobs import pythia_tokenizer_fallback
+
+    assert pythia_tokenizer_fallback("allenai/tulu-2-7b") is None
+    assert pythia_tokenizer_fallback("EleutherAI/gpt-neo-1.3B") is None
+    assert pythia_tokenizer_fallback("kykim0/pythia-1.4b-tulu-v2-mix") == (
+        "EleutherAI/pythia-1.4b",
+        "fedc38a16eea3bd36a96b906d78d11d2ce18ed79",
+    )
+
+
 def test_public_control_dry_run_freezes_inputs_and_does_not_load_models(tmp_path: Path) -> None:
     artifact_root = tmp_path / "dry_run"
     completed = subprocess.run(

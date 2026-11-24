@@ -33,6 +33,9 @@ EXTRA_ARGS=()
 if [ -n "${PUBLIC_CONTROL_MAX_EXAMPLES:-}" ]; then
   EXTRA_ARGS+=(--max-examples "$PUBLIC_CONTROL_MAX_EXAMPLES")
 fi
+if [ -n "${PUBLIC_CONTROL_MODELS:-}" ]; then
+  EXTRA_ARGS+=(--models "$PUBLIC_CONTROL_MODELS")
+fi
 
 "$ENV_DIR/bin/python" experiments/public_pythia_derivatives/runners/run_public_negative_controls.py \
   --artifact-root "$ARTIFACT_ROOT" \

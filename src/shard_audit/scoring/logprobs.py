@@ -16,6 +16,37 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 
+PYTHIA_TOKENIZER_FALLBACKS = {
+    "1b": (
+        "EleutherAI/pythia-1b",
+        "f73d7dcc545c8bd326d8559c8ef84ffe92fea6b2",
+    ),
+    "1.4b": (
+        "EleutherAI/pythia-1.4b",
+        "fedc38a16eea3bd36a96b906d78d11d2ce18ed79",
+    ),
+    "6.9b": (
+        "EleutherAI/pythia-6.9b",
+        "c0e3eee36dc47af0c49f361c74cfe459c09f7f23",
+    ),
+    "12b": (
+        "EleutherAI/pythia-12b",
+        "bb1e3e710cdf6b524461d543cfb5ba773f0a81b6",
+    ),
+}
+
+
+def pythia_tokenizer_fallback(model_name: str) -> tuple[str, str] | None:
+    """Return a compatible base tokenizer only for a Pythia-family model."""
+    lowered = model_name.lower()
+    if "pythia" not in lowered:
+        return None
+    for size in ("1.4b", "6.9b", "12b", "1b"):
+        if size in lowered:
+            return PYTHIA_TOKENIZER_FALLBACKS[size]
+    return None
+
+
 def get_device(device_str: str = "auto"):
     """Resolve 'auto' to cuda if available, else cpu."""
     import torch
@@ -47,20 +78,21 @@ def load_model_and_tokenizer(
     try:
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, **tokenizer_kwargs)
     except Exception as err:
-        base_fallback = "EleutherAI/pythia-1.4b"
-        if "1b" in model_name.lower() and "1.4" not in model_name.lower():
-            base_fallback = "EleutherAI/pythia-1b"
-        elif "6.9b" in model_name.lower():
-            base_fallback = "EleutherAI/pythia-6.9b"
-        elif "12b" in model_name.lower():
-            base_fallback = "EleutherAI/pythia-12b"
+        fallback = pythia_tokenizer_fallback(model_name)
+        if fallback is None:
+            raise RuntimeError(
+                f"Failed to load the tokenizer for non-Pythia model {model_name!r}. "
+                "Refusing to substitute an incompatible Pythia tokenizer. Install "
+                "the checkpoint's tokenizer dependencies (for Llama, sentencepiece)."
+            ) from err
+        base_fallback, fallback_revision = fallback
         logger.warning(
             "Failed to load tokenizer for '%s' (%s). Falling back to base tokenizer '%s'.",
             model_name, err, base_fallback
         )
         tokenizer = AutoTokenizer.from_pretrained(
             base_fallback,
-            revision="fedc38a16eea3bd36a96b906d78d11d2ce18ed79",
+            revision=fallback_revision,
         )
 
     if tokenizer.pad_token is None:
