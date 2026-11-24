@@ -77,23 +77,37 @@ def load_model_and_tokenizer(
     ) else {}
     try:
         tokenizer = AutoTokenizer.from_pretrained(tokenizer_name, **tokenizer_kwargs)
-    except Exception as err:
-        fallback = pythia_tokenizer_fallback(model_name)
-        if fallback is None:
-            raise RuntimeError(
-                f"Failed to load the tokenizer for non-Pythia model {model_name!r}. "
-                "Refusing to substitute an incompatible Pythia tokenizer. Install "
-                "the checkpoint's tokenizer dependencies (for Llama, sentencepiece)."
-            ) from err
-        base_fallback, fallback_revision = fallback
-        logger.warning(
-            "Failed to load tokenizer for '%s' (%s). Falling back to base tokenizer '%s'.",
-            model_name, err, base_fallback
-        )
-        tokenizer = AutoTokenizer.from_pretrained(
-            base_fallback,
-            revision=fallback_revision,
-        )
+    except Exception as fast_err:
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(
+                tokenizer_name,
+                use_fast=False,
+                **tokenizer_kwargs,
+            )
+            logger.warning(
+                "Fast tokenizer loading failed for '%s' (%s); using its native "
+                "slow tokenizer instead.",
+                tokenizer_name,
+                fast_err,
+            )
+        except Exception as err:
+            fallback = pythia_tokenizer_fallback(model_name)
+            if fallback is None:
+                raise RuntimeError(
+                    f"Failed to load either tokenizer implementation for non-Pythia "
+                    f"model {model_name!r}. Refusing to substitute an incompatible "
+                    "Pythia tokenizer. Install the checkpoint's tokenizer dependencies "
+                    "(for Llama, sentencepiece)."
+                ) from err
+            base_fallback, fallback_revision = fallback
+            logger.warning(
+                "Failed to load tokenizer for '%s' (%s). Falling back to base tokenizer '%s'.",
+                model_name, err, base_fallback
+            )
+            tokenizer = AutoTokenizer.from_pretrained(
+                base_fallback,
+                revision=fallback_revision,
+            )
 
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
