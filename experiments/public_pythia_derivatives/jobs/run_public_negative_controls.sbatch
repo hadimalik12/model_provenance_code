@@ -34,7 +34,7 @@ if [ -n "${PUBLIC_CONTROL_MAX_EXAMPLES:-}" ]; then
   EXTRA_ARGS+=(--max-examples "$PUBLIC_CONTROL_MAX_EXAMPLES")
 fi
 
-python experiments/public_pythia_derivatives/runners/run_public_negative_controls.py \
+"$ENV_DIR/bin/python" experiments/public_pythia_derivatives/runners/run_public_negative_controls.py \
   --artifact-root "$ARTIFACT_ROOT" \
   --dtype float16 \
   --max-length 512 \

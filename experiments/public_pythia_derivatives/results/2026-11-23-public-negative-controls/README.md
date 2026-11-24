@@ -47,11 +47,16 @@ sbatch --account=gts-vzikas3 \
   experiments/public_pythia_derivatives/jobs/run_public_negative_controls.sbatch
 ```
 
-The actual cluster submission uses smoke job `16070016` and full job
-`16070033`. The full job has an `afterok:16070016` dependency, so it cannot
+The corrected cluster submission uses smoke job `16071062` and full job
+`16071063`. The full job has an `afterok:16071062` dependency, so it cannot
 spend GPU time unless the smoke job succeeds. Both request one RTX6000. At the
 published internal rate of about $0.22 per GPU-hour, the two-hour hard limit on
 each job caps their combined charge below $0.90; expected usage is lower.
+
+The first smoke submission, job `16070016`, failed before model loading because
+the batch script invoked the system Python instead of the project environment.
+It used 28 GPU-seconds. Blocked dependent job `16070033` was cancelled. The
+launcher now invokes `.venv_pace/bin/python` explicitly.
 
 A positive result means that the model carries detectable information about
 the Pile witness split. It does not prove exact parentage or identify the route
